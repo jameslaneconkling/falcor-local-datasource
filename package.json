@@ -1,0 +1,24 @@
+{
+  "name": "falcor-local-datasource",
+  "version": "0.0.1",
+  "description": "An implementation of the Falcor DataSource interface that exposes the standard get/set/call methods on a local JSONGraph object",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/ | tap-summary"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jameslaneconkling/falcor-supertest-datasource.git"
+  },
+  "keywords": [
+    "falcor"
+  ],
+  "author": "jameslaneconkling",
+  "devDependencies": {
+    "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "falcor": "^0.1.17"
+  }
+}
