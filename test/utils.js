@@ -1,5 +1,6 @@
 const tape = require('tape');
 const walkTree = require('../utils').walkTree;
+const extractPathFromTree = require('../utils').extractPathFromTree;
 const pathValue2Tree = require('../utils').pathValue2Tree;
 const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnvelope;
 
@@ -29,6 +30,56 @@ tape('walkTree - Should return undefined if the path does exist in the tree', t 
   const expected = undefined;
 
   t.equal(walkTree(path, tree), expected);
+});
+
+
+tape('extractPathFromTree - Should extract sub tree from tree that contains path', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      '1': { name: 'Tom', age: 28 },
+      '2': { name: 'Dick' },
+    }
+  };
+  const path = ['people', 1, 'age'];
+  const expected = {
+    people: { 1: { age: 28 } }
+  };
+
+  t.deepEqual(extractPathFromTree(path, tree), expected);
+});
+// Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
+tape('extractPathFromTree - Should return sub tree with empty atom leaf node for incomplete path', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      '1': { name: 'Tom', age: 28 },
+    }
+  };
+  const path = ['people', 1];
+  const expected = {
+    people: { 1: { $type: 'atom' } }
+  };
+
+  t.deepEqual(extractPathFromTree(path, tree), expected);
+});
+// Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
+tape('extractPathFromTree - Should return sub tree with empty atom leaf node for non-existant path in tree', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      '1': { name: 'Tom', age: 28 },
+    }
+  };
+  const path = ['places', 1, 'name'];
+  const expected = {
+    places: { 1: { name: { $type: 'atom' } } }
+  };
+
+  t.deepEqual(extractPathFromTree(path, tree), expected);
 });
 
 
