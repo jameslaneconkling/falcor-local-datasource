@@ -4,6 +4,15 @@
 const collapse = require('falcor-path-utils').collapse;
 
 
+const range = (from = 0, to) => {
+  const list = [];
+  while (from <= to) {
+    list.push(from++);
+  }
+  return list;
+};
+
+
 const walkTree = (path, tree) => {
   if (path.length === 1) {
     return tree[path[0]];
@@ -37,6 +46,7 @@ const pathValues2JSONGraphEnvelope = pathValues => {
   return { jsonGraph, paths };
 };
 
+
 const expandPath = pathOrPathSet => {
   return pathOrPathSet.reduce((paths, keyOrKeySet) => {
     if (Array.isArray(keyOrKeySet)) {
@@ -46,11 +56,15 @@ const expandPath = pathOrPathSet => {
       []);
     } else if (typeof keyOrKeySet === 'object') {
       // range, e.g. [{ from: 1, to: 3 }]
+      return range(keyOrKeySet.from, keyOrKeySet.to).reduce((expandedPaths, key) =>
+        [...expandedPaths, ...paths.map(path => [...path, key])],
+      []);
     }
     // key
     return paths.map(path => [...path, keyOrKeySet]);
   }, [[]]);
 };
+
 
 const expandPaths = paths => {
   return paths.reduce((expandedPaths, path) => [...expandedPaths, ...expandPath(path)], []);

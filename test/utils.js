@@ -153,9 +153,36 @@ tape('expandPath - Should expand a path with two keySets of length 2 and 3 into 
 
   t.deepEqual(expandPath(path), expected);
 });
+tape('expandPath - Should expand a path with range and keySet into a list of paths', t => {
+  t.plan(1);
+
+  const path = ['people', { from: 1, to: 3 }, ['age', 'name']];
+  const expected = [
+    ['people', 1, 'age'],
+    ['people', 2, 'age'],
+    ['people', 3, 'age'],
+    ['people', 1, 'name'],
+    ['people', 2, 'name'],
+    ['people', 3, 'name']
+  ];
+
+  t.deepEqual(expandPath(path), expected);
+});
+tape('expandPath - Should expand a path with range with no from key into a list of paths', t => {
+  t.plan(1);
+
+  const path = ['people', {to: 2}, 'age'];
+  const expected = [
+    ['people', 0, 'age'],
+    ['people', 1, 'age'],
+    ['people', 2, 'age'],
+  ];
+
+  t.deepEqual(expandPath(path), expected);
+});
 
 
-tape('expandPath - Should expand two simple paths into a list of 2 paths', t => {
+tape('expandPaths - Should expand two simple paths into a list of 2 paths', t => {
   t.plan(1);
 
   const paths = [
@@ -169,12 +196,28 @@ tape('expandPath - Should expand two simple paths into a list of 2 paths', t => 
 
   t.deepEqual(expandPaths(paths), expected);
 });
-tape('expandPath - Should expand two pathSets into a list of 4 paths', t => {
+tape('expandPaths - Should expand two pathSets into a list of paths', t => {
   t.plan(1);
 
   const paths = [
     ['people', 1, ['age', 'name']],
-    ['people', [3,4], 'name']
+    ['people', [3, 4], 'name']
+  ];
+  const expected = [
+    ['people', 1, 'age'],
+    ['people', 1, 'name'],
+    ['people', 3, 'name'],
+    ['people', 4, 'name']
+  ];
+
+  t.deepEqual(expandPaths(paths), expected);
+});
+tape('expandPaths - Should expand two pathSets with ranges into a list of paths', t => {
+  t.plan(1);
+
+  const paths = [
+    ['people', 1, ['age', 'name']],
+    ['people', { from: 3, to: 4 }, 'name']
   ];
   const expected = [
     ['people', 1, 'age'],
