@@ -19,6 +19,8 @@
     "tape": "^4.6.3"
   },
   "dependencies": {
-    "falcor": "^0.1.17"
+    "falcor": "^0.1.17",
+    "falcor-path-utils": "^0.5.1",
+    "rx": "^4.1.0"
   }
 }

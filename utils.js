@@ -1,3 +1,5 @@
+const collapse = require('falcor-path-utils').collapse;
+
 const walkTree = (path, tree) => {
   if (path.length === 1) {
     return tree[path[0]];
@@ -7,6 +9,8 @@ const walkTree = (path, tree) => {
   }
   return undefined;
 };
+
+const extractSubTree = (paths, tree) => {};
 
 // TODO - make tail recursive?
 const pathValue2Tree = (pathValue, tree = {}) => {
@@ -24,10 +28,12 @@ const pathValue2Tree = (pathValue, tree = {}) => {
 const pathValues2JSONGraphEnvelope = pathValues => {
   const jsonGraph = pathValues.reduce((tree, pathValue) => pathValue2Tree(pathValue, tree), {});
 
-  const paths = pathValues.map(pathValue => pathValue.path);
+  const paths = collapse(pathValues.map(pathValue => pathValue.path));
 
   return { jsonGraph, paths };
 };
+
+const expandPaths = paths => {};
 
 module.exports.walkTree = walkTree;
 module.exports.pathValue2Tree = pathValue2Tree;

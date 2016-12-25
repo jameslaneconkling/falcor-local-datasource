@@ -107,8 +107,7 @@ tape('pathValues2JSONGraphEnvelope - Should convert multiple pathValues to a jso
       }
     },
     paths: [
-      ['people', 2, 'name'],
-      ['people', 2, 'age'],
+      ['people', 2, ['age', 'name']],
       ['people', 3, 'name']
     ]
   };
