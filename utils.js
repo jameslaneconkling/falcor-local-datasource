@@ -53,7 +53,7 @@ const expandPath = pathOrPathSet => {
 };
 
 const expandPaths = paths => {
-
+  return paths.reduce((expandedPaths, path) => [...expandedPaths, ...expandPath(path)], []);
 };
 
 

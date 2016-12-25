@@ -3,6 +3,7 @@ const walkTree = require('../utils').walkTree;
 const pathValue2Tree = require('../utils').pathValue2Tree;
 const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnvelope;
 const expandPath = require('../utils').expandPath;
+const expandPaths = require('../utils').expandPaths;
 const extractPathFromTree = require('../utils').extractPathFromTree;
 
 
@@ -151,6 +152,38 @@ tape('expandPath - Should expand a path with two keySets of length 2 and 3 into 
   ];
 
   t.deepEqual(expandPath(path), expected);
+});
+
+
+tape('expandPath - Should expand two simple paths into a list of 2 paths', t => {
+  t.plan(1);
+
+  const paths = [
+    ['people', 1, 'age'],
+    ['people', 1, 'name']
+  ];
+  const expected = [
+    ['people', 1, 'age'],
+    ['people', 1, 'name']
+  ];
+
+  t.deepEqual(expandPaths(paths), expected);
+});
+tape('expandPath - Should expand two pathSets into a list of 4 paths', t => {
+  t.plan(1);
+
+  const paths = [
+    ['people', 1, ['age', 'name']],
+    ['people', [3,4], 'name']
+  ];
+  const expected = [
+    ['people', 1, 'age'],
+    ['people', 1, 'name'],
+    ['people', 3, 'name'],
+    ['people', 4, 'name']
+  ];
+
+  t.deepEqual(expandPaths(paths), expected);
 });
 
 
