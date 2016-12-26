@@ -71,17 +71,20 @@ const expandPaths = paths => {
 };
 
 
-// TODO - should not mutate trees?
-const mergeTrees = (treeA, treeB) => {
-  Object.keys(treeA).forEach(key => {
-    if (treeB[key]) {
-      return mergeTrees(treeA[key], treeB[key]);
+// NOTE - target/source can still reference nested objects in output
+// NOTE - won't recursively merge arrays
+const mergeTrees = (target, source) => {
+  return Object.keys(source).reduce((merged, sourceKey) => {
+    const sourceValue = source[sourceKey];
+
+    if ((Array.isArray(sourceValue) || typeof sourceValue !== 'object') || !(sourceKey in target)) {
+      // base case 1: sourceValue is an array or non-object primitive
+      // base case 2: sourceKey does not exist in target
+      return Object.assign({}, merged, { [sourceKey]: sourceValue });
+    } else {
+      return Object.assign({}, merged, { [sourceKey]: mergeTrees(merged[sourceKey], sourceValue) });
     }
-
-    return treeB[key] = treeA[key];
-  });
-
-  return treeB;
+  }, target);
 };
 
 

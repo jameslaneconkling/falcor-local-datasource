@@ -155,6 +155,18 @@ tape('expandPath - Should expand a path with two keySets of length 2 and 3 into 
 
   t.deepEqual(expandPath(path), expected);
 });
+tape('expandPath - Should expand a path with range from key into a list of paths', t => {
+  t.plan(1);
+
+  const path = ['people', {to: 2}, 'age'];
+  const expected = [
+    ['people', 0, 'age'],
+    ['people', 1, 'age'],
+    ['people', 2, 'age'],
+  ];
+
+  t.deepEqual(expandPath(path), expected);
+});
 tape('expandPath - Should expand a path with range and keySet into a list of paths', t => {
   t.plan(1);
 
@@ -166,18 +178,6 @@ tape('expandPath - Should expand a path with range and keySet into a list of pat
     ['people', 1, 'name'],
     ['people', 2, 'name'],
     ['people', 3, 'name']
-  ];
-
-  t.deepEqual(expandPath(path), expected);
-});
-tape('expandPath - Should expand a path with range with no from key into a list of paths', t => {
-  t.plan(1);
-
-  const path = ['people', {to: 2}, 'age'];
-  const expected = [
-    ['people', 0, 'age'],
-    ['people', 1, 'age'],
-    ['people', 2, 'age'],
   ];
 
   t.deepEqual(expandPath(path), expected);
@@ -232,17 +232,17 @@ tape('expandPaths - Should expand two pathSets with ranges into a list of paths'
 });
 
 
-tape('mergeTrees - Should merge two trees', t => {
-  t.plan(1);
+tape('mergeTrees - Should merge two trees with disjoint leaf nodes', t => {
+  t.plan(2);
 
-  const treeA = {
-    people: { 1: { name: 'Tom' } }
-  };
-  const treeB = {
+  const target = {
     people: {
       1: { age: 26 },
       2: { name: 'Dick' }
     }
+  };
+  const source = {
+    people: { 1: { name: 'Tom' } }
   };
   const expected = {
     people: {
@@ -251,7 +251,39 @@ tape('mergeTrees - Should merge two trees', t => {
     }
   };
 
-  t.deepEqual(mergeTrees(treeA, treeB), expected);
+  t.deepEqual(mergeTrees(target, source), expected, 'merges small tree into large tree');
+  t.deepEqual(mergeTrees(source, target), expected, 'merges large tree into small tree');
+});
+tape('mergeTrees - Should merge two trees and overwrite source with target for overlapping leaf nodes', t => {
+  t.plan(1);
+
+  const target = {
+    people: {
+      1: {
+        name: "Tom",
+        age: 28
+      }
+    }
+  };
+
+  const source = {
+    people: {
+      1: {
+        name: "Thom",
+        height: 71
+      }
+    }
+  };
+
+  t.deepEqual(mergeTrees(target, source), {
+    people: {
+      1: {
+        name: "Thom",
+        age: 28,
+        height: 71
+      }
+    }
+  });
 });
 
 
