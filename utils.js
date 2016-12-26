@@ -71,7 +71,18 @@ const expandPaths = paths => {
 };
 
 
-const mergeTrees = (treeA, treeB) => {};
+// TODO - should not mutate trees?
+const mergeTrees = (treeA, treeB) => {
+  Object.keys(treeA).forEach(key => {
+    if (treeB[key]) {
+      return mergeTrees(treeA[key], treeB[key]);
+    }
+
+    return treeB[key] = treeA[key];
+  });
+
+  return treeB;
+};
 
 
 
@@ -95,7 +106,7 @@ const extractPathsFromTree = (paths, tree) => {
   // we could drop the expandPaths call and reduce the number of potential recursive
   // passes through the graph
   return expandPaths(paths).reduce((subTree, path) => {
-    return mergeTrees(subTree, extractPathFromTree(path));
+    return mergeTrees(subTree, extractPathFromTree(path, tree));
   }, {});
 };
 
@@ -104,5 +115,6 @@ module.exports.pathValue2Tree = pathValue2Tree;
 module.exports.pathValues2JSONGraphEnvelope = pathValues2JSONGraphEnvelope;
 module.exports.expandPath = expandPath;
 module.exports.expandPaths = expandPaths;
+module.exports.mergeTrees = mergeTrees;
 module.exports.extractPathFromTree = extractPathFromTree;
 module.exports.extractPathsFromTree = extractPathsFromTree;

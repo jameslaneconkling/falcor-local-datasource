@@ -4,7 +4,9 @@ const pathValue2Tree = require('../utils').pathValue2Tree;
 const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnvelope;
 const expandPath = require('../utils').expandPath;
 const expandPaths = require('../utils').expandPaths;
+const mergeTrees = require('../utils').mergeTrees;
 const extractPathFromTree = require('../utils').extractPathFromTree;
+const extractPathsFromTree = require('../utils').extractPathsFromTree;
 
 
 tape('walkTree - Should return the value in the tree at the specified value', t => {
@@ -230,6 +232,29 @@ tape('expandPaths - Should expand two pathSets with ranges into a list of paths'
 });
 
 
+tape('mergeTrees - Should merge two trees', t => {
+  t.plan(1);
+
+  const treeA = {
+    people: { 1: { name: 'Tom' } }
+  };
+  const treeB = {
+    people: {
+      1: { age: 26 },
+      2: { name: 'Dick' }
+    }
+  };
+  const expected = {
+    people: {
+      1: { name: 'Tom', age: 26 },
+      2: { name: 'Dick' }
+    }
+  };
+
+  t.deepEqual(mergeTrees(treeA, treeB), expected);
+});
+
+
 tape('extractPathFromTree - Should extract sub tree from tree that contains path', t => {
   t.plan(1);
 
@@ -277,4 +302,44 @@ tape('extractPathFromTree - Should return sub tree with empty atom leaf node for
   };
 
   t.deepEqual(extractPathFromTree(path, tree), expected);
+});
+
+
+tape('extractPathsFromTree - Should return sub tree from pathSet', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      '1': { name: 'Tom', age: 28 },
+    }
+  };
+  const paths = [
+    ['people', 1, ['name', 'age']]
+  ];
+  const expected = {
+    people: { 1: { name: 'Tom', age: 28 } }
+  };
+
+  t.deepEqual(extractPathsFromTree(paths, tree), expected);
+});
+tape('extractPathsFromTree - Should return sub tree from multiple pathSets', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      0: { name: 'Tom', age: 28 },
+      1: { name: 'Dick', age: 26 },
+    }
+  };
+  const paths = [
+    ['people', { to: 1 } , ['name', 'age']]
+  ];
+  const expected = {
+    people: {
+      0: { name: 'Tom', age: 28 },
+      1: { name: 'Dick', age: 26 }
+    }
+  };
+
+  t.deepEqual(extractPathsFromTree(paths, tree), expected);
 });
