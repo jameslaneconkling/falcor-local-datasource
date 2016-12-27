@@ -9,10 +9,10 @@ const mergeTrees = require('./utils').mergeTrees;
 
 
 module.exports = class LocalDatasource {
-  constructor(cache = {}) {
-    this._cache = cache;
+  constructor(graph = {}) {
+    this._graph = graph;
 
-    // this._model = new falcor.Model({ cache })
+    // this._model = new falcor.Model({ graph })
     //   ._materialize()
     //   .boxValues()
     //   .treatErrorsAsValues();
@@ -26,22 +26,22 @@ module.exports = class LocalDatasource {
     //   }));
 
     return Rx.Observable.just({
-      jsonGraph: extractPathsFromTree(paths, this._cache),
+      jsonGraph: extractPathsFromTree(paths, this._graph),
       paths
     });
   }
 
   set(jsonGraphEnvelope) {
-    this._cache = mergeTrees(this._cache, jsonGraphEnvelope.jsonGraph);
+    this._graph = mergeTrees(this._graph, jsonGraphEnvelope.jsonGraph);
 
     return Rx.Observable.just({
-      jsonGraph: extractPathsFromTree(jsonGraphEnvelope.paths, this._cache),
+      jsonGraph: extractPathsFromTree(jsonGraphEnvelope.paths, this._graph),
       paths: jsonGraphEnvelope.path
     });
   }
 
   call(callPath, args, refPaths, thisPaths) {
-    let callResponse = walkTree(callPath, this._cache)(this._cache, callPath, args);
+    let callResponse = walkTree(callPath, this._graph)(this._graph, callPath, args);
 
     if (isPathValues(callResponse)) {
       callResponse = pathValues2JSONGraphEnvelope(callResponse);
@@ -52,38 +52,8 @@ module.exports = class LocalDatasource {
       `));
     }
 
-    this._cache = mergeTrees(this._cache, callResponse);
+    this._graph = mergeTrees(this._graph, callResponse);
 
     return Rx.Observable.just(callResponse);
-    // return Rx.Observable.just({
-    //   jsonGraph: extractPathsFromTree(callPath.slice(0, -1), callResponse.jsonGraph),
-    //   paths: callResponse.paths
-    // });
-    // TODO - should work with jsonGraphEnvelope
-    // const pathValues = walkTree(
-    //   [...callPath, 'value'],
-    //   this._model.getCache(callPath)
-    // )(this._model.unboxValues(), callPath, args);
-
-    // // add call response to dataSource cache
-    // // WTF - model.setCache is overwritten by an undefined instance method when
-    // // instantiated w/ a decorator (e.g. model.boxValues, etc.)
-    // // should fail this test? https://github.com/Netflix/falcor/blob/master/test/falcor/get/get.clone.spec.js
-    // // this._model.constructor.prototype.setCache(pathValues);
-    // return this._model.set(...pathValues)
-    //   .flatMap(() => {
-
-    //     return Rx.Observable.from(pathValues);
-
-    //     // merge response with thisPaths and refPaths
-    //     return Rx.Observable.merge(
-    //       Rx.Observable.from(pathValues)
-    //       // TODO - figure out thisPath
-    //       // this._model.get([...callPath, ...thisPaths])
-    //       // TODO - get this to work w/ pathValues
-    //       // this._model.get(...pathValues.paths.map(pathSet => [...pathSet, refPaths]))
-    //     )
-    //   });
-
   }
 };
