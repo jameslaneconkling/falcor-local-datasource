@@ -6,14 +6,14 @@ const LocalDatasource = require('../index');
 const setupModel = () => {
   const cache = {
     people: {
-      create(model, callPath, args) {
+      create(graph, callPath, args) {
         // create a new person node for each object in args
-        const peopleLength = model.getCache(['people', 'length']).people.length;
+        const peopleLength = graph.people.length;
 
         return args.map((newPerson, idx) =>
           Object.keys(newPerson).map(field => {
             return {
-              path: ['people', peopleLength + idx, field],
+              path: ['people', peopleLength + idx + 1, field],
               value: newPerson[field]
             };
           }))
@@ -164,7 +164,7 @@ tape.skip('Does what on model.set with incomplete path?');
 tape.skip('Does what on model.set for path that does not exist in graph');
 
 
-tape.skip('Exposes functions in the local JSONGraph store via model.call', t => {
+tape('Exposes functions in the local JSONGraph store via model.call', t => {
   t.plan(1);
 
   const model = setupModel();
@@ -175,9 +175,11 @@ tape.skip('Exposes functions in the local JSONGraph store via model.call', t => 
   const expectedResponse = {
     json: {
       people: {
-        1: {
-          name: 'Thom'
-        }
+        4: {
+          name: 'Harry Jr.',
+          age: 21
+        },
+        length: 4
       }
     }
   };

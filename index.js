@@ -1,5 +1,9 @@
 const falcor = require( 'falcor');
 const Rx = require('rx');
+const walkTree = require('./utils').walkTree;
+const isPathValues = require('./utils').isPathValues;
+const isJSONGraphEnvelope = require('./utils').isJSONGraphEnvelope;
+const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 const extractPathsFromTree = require('./utils').extractPathsFromTree;
 const mergeTrees = require('./utils').mergeTrees;
 
@@ -37,6 +41,24 @@ module.exports = class LocalDatasource {
   }
 
   call(callPath, args, refPaths, thisPaths) {
+    let callResponse = walkTree(callPath, this._cache)(this._cache, callPath, args);
+
+    if (isPathValues(callResponse)) {
+      callResponse = pathValues2JSONGraphEnvelope(callResponse);
+    } else if (!isJSONGraphEnvelope(callResponse)) {
+      return Rx.Observable.throw(new Error(`
+        ${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues.
+        Returned ${callPath}
+      `));
+    }
+
+    this._cache = mergeTrees(this._cache, callResponse);
+
+    return Rx.Observable.just(callResponse);
+    // return Rx.Observable.just({
+    //   jsonGraph: extractPathsFromTree(callPath.slice(0, -1), callResponse.jsonGraph),
+    //   paths: callResponse.paths
+    // });
     // TODO - should work with jsonGraphEnvelope
     // const pathValues = walkTree(
     //   [...callPath, 'value'],

@@ -13,6 +13,16 @@ const range = (from = 0, to) => {
 };
 
 
+const isPathValues = pathValues =>
+  pathValues.reduce((result, pathValue) =>
+    result && Array.isArray(pathValue.path) && typeof pathValue.value !== 'undefined',
+  true);
+
+
+const isJSONGraphEnvelope = JSONGraphEnvelope =>
+  typeof JSONGraphEnvelope.jsonGraph === 'object' && Array.isArray(JSONGraphEnvelope.paths);
+
+
 const walkTree = (path, tree) => {
   if (path.length === 1) {
     return tree[path[0]];
@@ -114,6 +124,8 @@ const extractPathsFromTree = (paths, tree) => {
 };
 
 module.exports.walkTree = walkTree;
+module.exports.isPathValues = isPathValues;
+module.exports.isJSONGraphEnvelope = isJSONGraphEnvelope;
 module.exports.pathValue2Tree = pathValue2Tree;
 module.exports.pathValues2JSONGraphEnvelope = pathValues2JSONGraphEnvelope;
 module.exports.expandPath = expandPath;
