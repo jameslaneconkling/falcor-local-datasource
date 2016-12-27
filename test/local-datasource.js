@@ -106,7 +106,7 @@ const setupModel = () => {
 };
 
 
-tape('Retrieves JSONEnvelope via model.get', t => {
+tape('Retrieves JSONGraphEnvelope from graph via model.get', t => {
   t.plan(1);
 
   const model = setupModel();
@@ -126,9 +126,11 @@ tape('Retrieves JSONEnvelope via model.get', t => {
       t.deepEqual(res, expectedResponse);
     });
 });
+tape.skip('Does what on model.get with incomplete path?');
+tape.skip('Does what on model.get for path that does not exist in graph');
 
-tape('Updates JSONEnvelope via model.set', t => {
-  t.plan(1);
+tape('Updates Graph via model.set', t => {
+  t.plan(3);
 
   const model = setupModel();
   const expectedResponse = {
@@ -145,12 +147,24 @@ tape('Updates JSONEnvelope via model.set', t => {
     path: ['people', 1, ['name']],
     value: 'Thom'
   })
+    .flatMap(res => {
+      t.deepEqual(res, expectedResponse, 'model.set responds with correct JSONEnvelope');
+
+      t.deepEqual(model.getCache(['people', 1, ['name']]), { people: { 1: { name: 'Thom' } } }, 'model cache is updated after model.set');
+
+      model.invalidate(['people', 1, ['name']]);
+
+      return model.get(['people', 1, ['name']]);
+    })
     .subscribe(res => {
-      t.deepEqual(res, expectedResponse);
+      t.deepEqual(res, expectedResponse, 'datasource cache is updated after model.set');
     });
 });
+tape.skip('Does what on model.set with incomplete path?');
+tape.skip('Does what on model.set for path that does not exist in graph');
 
-tape('Exposes functions in the local JSONGraph store via model.call', t => {
+
+tape.skip('Exposes functions in the local JSONGraph store via model.call', t => {
   t.plan(1);
 
   const model = setupModel();
