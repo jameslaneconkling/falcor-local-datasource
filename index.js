@@ -4,6 +4,7 @@ const walkTree = require('./utils').walkTree;
 const isPathValues = require('./utils').isPathValues;
 const isJSONGraphEnvelope = require('./utils').isJSONGraphEnvelope;
 const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
+const extractPathFromTree = require('./utils').extractPathFromTree;
 const extractPathsFromTree = require('./utils').extractPathsFromTree;
 const mergeTrees = require('./utils').mergeTrees;
 
@@ -40,7 +41,7 @@ module.exports = class LocalDatasource {
     });
   }
 
-  call(callPath, args, refPaths, thisPaths) {
+  call(callPath, args, refPaths = [], thisPaths = []) {
     let callResponse = walkTree(callPath, this._graph)(this._graph, callPath, args);
 
     if (isPathValues(callResponse)) {
@@ -52,8 +53,30 @@ module.exports = class LocalDatasource {
       `));
     }
 
-    this._graph = mergeTrees(this._graph, callResponse);
+    // merge call response into graph
+    this._graph = mergeTrees(this._graph, callResponse.jsonGraph);
 
-    return Rx.Observable.just(callResponse);
+    let response = {
+      jsonGraph: {},
+      paths: []
+    };
+
+    // add thisPaths to response
+    response = {
+      jsonGraph: mergeTrees(response.jsonGraph, extractPathsFromTree(thisPaths, this._graph)),
+      paths: [...response.paths, ...thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath])]
+    };
+
+    // add refPaths to response
+    // response = refPaths.reduce((response, refPath) => {
+    //   return callResponse.paths.reduce((response, callResponsePath) => {
+    //     return Object.assign(response, {
+    //       jsonGraph: mergeTrees(response.jsonGraph, extractPathsFromTree([...callResponse.paths, ...refPath])),
+    //       paths: [...response.paths, [...callResponse.paths, ...refPath]]
+    //     });
+    //   }, response)
+    // }, response);
+
+    return Rx.Observable.just(response);
   }
 };

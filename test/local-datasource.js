@@ -82,8 +82,6 @@ const setupModel = () => {
       },
       // falcor router is able to calculate virtual values like length on the fly
       // unless local-datasource can respond to a get as a function...
-      // which would probably require the cache being an object, not another model...
-      // which would probably require a way to decompose a pathSet into a path
       length: 3
     },
     places: {
@@ -106,7 +104,7 @@ const setupModel = () => {
 };
 
 
-tape('Retrieves JSONGraphEnvelope from graph via model.get', t => {
+tape('model.get - Retrieves JSONGraphEnvelope from graph', t => {
   t.plan(1);
 
   const model = setupModel();
@@ -129,7 +127,8 @@ tape('Retrieves JSONGraphEnvelope from graph via model.get', t => {
 tape.skip('Does what on model.get with incomplete path?');
 tape.skip('Does what on model.get for path that does not exist in graph');
 
-tape('Updates Graph via model.set', t => {
+
+tape('model.set - Updates Graph', t => {
   t.plan(3);
 
   const model = setupModel();
@@ -164,7 +163,7 @@ tape.skip('Does what on model.set with incomplete path?');
 tape.skip('Does what on model.set for path that does not exist in graph');
 
 
-tape('Exposes functions in the local JSONGraph store via model.call', t => {
+tape('model.call - Exposes functions in the local JSONGraph store', t => {
   t.plan(1);
 
   const model = setupModel();
@@ -172,25 +171,37 @@ tape('Exposes functions in the local JSONGraph store via model.call', t => {
   const args = [{ name: 'Harry Jr.', age: 21 }];
   const refPath = [];
   const thisPath = [];
+
+  model.call(callPath, args, refPath, thisPath)
+    .subscribe(() => {}, () => {}, () => {
+      t.pass('Returns onComplete when no return paths are requested');
+    });
+});
+
+
+tape('model.call - Returns thisPaths from model.call', t => {
+  t.plan(1);
+
+  const model = setupModel();
+  const callPath = ['people', 'create'];
+  const args = [{ name: 'Harry Jr.', age: 21 }];
+  const refPaths = [];
+  const thisPaths = [
+    ['length'],
+    [1, ['name', 'age']]
+  ];
   const expectedResponse = {
-    json: {
-      people: {
-        4: {
-          name: 'Harry Jr.',
-          age: 21
-        },
-        length: 4
-      }
+    people: {
+      1: {
+        name: 'Tom',
+        age: 28
+      },
+      length: 4
     }
   };
 
-  model.call(callPath, args, refPath, thisPath)
-    .subscribe(
-      res => {
-        t.deepEqual(res, expectedResponse);
-      },
-      err => {
-        t.fail(err);
-      }
-    );
+  model.call(callPath, args, refPaths, thisPaths)
+    .subscribe(res => {
+      t.deepEqual(res.json, expectedResponse);
+    });
 });
