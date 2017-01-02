@@ -5,8 +5,8 @@ const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnv
 const expandPath = require('../utils').expandPath;
 const expandPaths = require('../utils').expandPaths;
 const mergeTrees = require('../utils').mergeTrees;
-const extractPathFromTree = require('../utils').extractPathFromTree;
-const extractPathsFromTree = require('../utils').extractPathsFromTree;
+const extractSubTreeByPath = require('../utils').extractSubTreeByPath;
+const extractSubTreeByPaths = require('../utils').extractSubTreeByPaths;
 
 
 tape('walkTree - Should return the value in the tree at the specified value', t => {
@@ -287,7 +287,7 @@ tape('mergeTrees - Should merge two trees and overwrite source with target for o
 });
 
 
-tape('extractPathFromTree - Should extract sub tree from tree that contains path', t => {
+tape('extractSubTreeByPath - Should extract sub tree from tree that contains path', t => {
   t.plan(1);
 
   const tree = {
@@ -301,10 +301,10 @@ tape('extractPathFromTree - Should extract sub tree from tree that contains path
     people: { 1: { age: 28 } }
   };
 
-  t.deepEqual(extractPathFromTree(path, tree), expected);
+  t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
 // Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
-tape('extractPathFromTree - Should return sub tree with empty atom leaf node for incomplete path', t => {
+tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path', t => {
   t.plan(1);
 
   const tree = {
@@ -317,10 +317,10 @@ tape('extractPathFromTree - Should return sub tree with empty atom leaf node for
     people: { 1: { $type: 'atom' } }
   };
 
-  t.deepEqual(extractPathFromTree(path, tree), expected);
+  t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
 // Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
-tape('extractPathFromTree - Should return sub tree with empty atom leaf node for non-existant path in tree', t => {
+tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for non-existant path in tree', t => {
   t.plan(1);
 
   const tree = {
@@ -333,11 +333,11 @@ tape('extractPathFromTree - Should return sub tree with empty atom leaf node for
     places: { 1: { name: { $type: 'atom' } } }
   };
 
-  t.deepEqual(extractPathFromTree(path, tree), expected);
+  t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
 
 
-tape('extractPathsFromTree - Should return sub tree from pathSet', t => {
+tape('extractSubTreeByPaths - Should return sub tree from pathSet', t => {
   t.plan(1);
 
   const tree = {
@@ -352,9 +352,9 @@ tape('extractPathsFromTree - Should return sub tree from pathSet', t => {
     people: { 1: { name: 'Tom', age: 28 } }
   };
 
-  t.deepEqual(extractPathsFromTree(paths, tree), expected);
+  t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
 });
-tape('extractPathsFromTree - Should return sub tree from multiple pathSets', t => {
+tape('extractSubTreeByPaths - Should return sub tree from multiple pathSets', t => {
   t.plan(1);
 
   const tree = {
@@ -373,5 +373,5 @@ tape('extractPathsFromTree - Should return sub tree from multiple pathSets', t =
     }
   };
 
-  t.deepEqual(extractPathsFromTree(paths, tree), expected);
+  t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
 });

@@ -99,7 +99,7 @@ const mergeTrees = (target, source) => {
 
 
 
-const extractPathFromTree = (path, tree = {}) => {
+const extractSubTreeByPath = (path, tree = {}) => {
   if (path.length === 1) {
     // if tree does not terminate at a value, meaning path is incomplete,
     // or if tree does not contain path node, meaning path does not exist in tree
@@ -110,16 +110,16 @@ const extractPathFromTree = (path, tree = {}) => {
     };
   }
 
-  return { [path[0]]: extractPathFromTree(path.slice(1), tree[path[0]]) }
+  return { [path[0]]: extractSubTreeByPath(path.slice(1), tree[path[0]]) }
 }
 
 
-const extractPathsFromTree = (paths, tree) => {
-  // TODO - if extractPathFromTree could handle pathSets, rather than just paths,
+const extractSubTreeByPaths = (paths, tree) => {
+  // TODO - if extractSubTreeByPath could handle pathSets, rather than just paths,
   // we could drop the expandPaths call and reduce the number of potential recursive
   // passes through the graph
   return expandPaths(paths).reduce((subTree, path) => {
-    return mergeTrees(subTree, extractPathFromTree(path, tree));
+    return mergeTrees(subTree, extractSubTreeByPath(path, tree));
   }, {});
 };
 
@@ -131,5 +131,5 @@ module.exports.pathValues2JSONGraphEnvelope = pathValues2JSONGraphEnvelope;
 module.exports.expandPath = expandPath;
 module.exports.expandPaths = expandPaths;
 module.exports.mergeTrees = mergeTrees;
-module.exports.extractPathFromTree = extractPathFromTree;
-module.exports.extractPathsFromTree = extractPathsFromTree;
+module.exports.extractSubTreeByPath = extractSubTreeByPath;
+module.exports.extractSubTreeByPaths = extractSubTreeByPaths;
