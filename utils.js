@@ -1,6 +1,5 @@
 // TODO:
 // * add type defs
-// * test these against refs
 const collapse = require('falcor-path-utils').collapse;
 
 
@@ -99,27 +98,36 @@ const mergeTrees = (target, source) => {
 
 
 
-const extractSubTreeByPath = (path, tree = {}) => {
+const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
   if (path.length === 1) {
-    // if tree does not terminate at a value, meaning path is incomplete,
-    // or if tree does not contain path node, meaning path does not exist in tree
-    // terminate the tree w/ an empty atom leaf node
+    // if subTree does not terminate at a value, meaning path is incomplete,
+    // or if subTree does not contain path node, meaning path does not exist in subTree
+    // terminate the subTree w/ an empty atom leaf node
     // otherwise, return value
     return {
-      [path[0]]: (typeof tree[path[0]] === 'object' || typeof tree[path[0]] === 'undefined') ? { $type: 'atom' } : tree[path[0]]
+      [path[0]]: (typeof subTree[path[0]] === 'object' || typeof subTree[path[0]] === 'undefined') ? { $type: 'atom' } : subTree[path[0]]
     };
   }
 
-  return { [path[0]]: extractSubTreeByPath(path.slice(1), tree[path[0]]) }
+  // if next key in path points to a ref, resolve ref
+  if (subTree[path[0]] && subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
+    return {
+      [path[0]]: extractSubTreeByPath(path.slice(1), walkTree(subTree[path[0]].value, graph), graph)
+    };
+  }
+
+  return {
+    [path[0]]: extractSubTreeByPath(path.slice(1), subTree[path[0]], graph)
+  };
 }
 
 
-const extractSubTreeByPaths = (paths, tree) => {
+const extractSubTreeByPaths = (paths, graph) => {
   // TODO - if extractSubTreeByPath could handle pathSets, rather than just paths,
   // we could drop the expandPaths call and reduce the number of potential recursive
   // passes through the graph
   return expandPaths(paths).reduce((subTree, path) => {
-    return mergeTrees(subTree, extractSubTreeByPath(path, tree));
+    return mergeTrees(subTree, extractSubTreeByPath(path, graph));
   }, {});
 };
 

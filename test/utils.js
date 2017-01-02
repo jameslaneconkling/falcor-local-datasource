@@ -303,6 +303,27 @@ tape('extractSubTreeByPath - Should extract sub tree from tree that contains pat
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
+tape('extractSubTreeByPath - Should resolve refs when extracting sub tree from tree that contains path', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      }
+    },
+    peopleById: {
+      id_1: { name: 'Tom', age: 28 }
+    }
+  };
+  const path = ['people', 0, 'name'];
+  const expected = {
+    people: { 0: { name: 'Tom' } }
+  };
+
+  t.deepEqual(extractSubTreeByPath(path, tree), expected);
+});
 // Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
 tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path', t => {
   t.plan(1);
@@ -350,6 +371,37 @@ tape('extractSubTreeByPaths - Should return sub tree from pathSet', t => {
   ];
   const expected = {
     people: { 1: { name: 'Tom', age: 28 } }
+  };
+
+  t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
+});
+tape('extractSubTreeByPaths - Should resolve refs when extracting sub tree from pathSet', t => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      },
+      1: {
+        $type: 'ref',
+        value: ['peopleById', 'id_2']
+      }
+    },
+    peopleById: {
+      id_1: { name: 'Tom', age: 28 },
+      id_2: { name: 'Dick', age: 30 }
+    }
+  };
+  const paths = [
+    ['people', [0, 1], ['name', 'age']]
+  ];
+  const expected = {
+    people: {
+      0: { name: 'Tom', age: 28 },
+      1: { name: 'Dick', age: 30 }
+    }
   };
 
   t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
