@@ -1,10 +1,11 @@
 const tape = require('tape');
 const walkTree = require('../utils').walkTree;
+const assocPath = require('../utils').assocPath;
 const pathValue2Tree = require('../utils').pathValue2Tree;
 const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnvelope;
 const expandPath = require('../utils').expandPath;
 const expandPaths = require('../utils').expandPaths;
-const mergeTrees = require('../utils').mergeTrees;
+const mergeGraphs = require('../utils').mergeGraphs;
 const extractSubTreeByPath = require('../utils').extractSubTreeByPath;
 const extractSubTreeByPaths = require('../utils').extractSubTreeByPaths;
 
@@ -13,27 +14,82 @@ tape('walkTree - Should return the value in the tree at the specified value', t 
   t.plan(1);
 
   const tree = {
-    people: {
-      '1': { name: 'Tom', age: 28 }
-    }
+    people: { 1: { name: 'Tom', age: 28 } }
   };
   const path = ['people', 1, 'name'];
   const expected = 'Tom';
 
   t.equal(walkTree(path, tree), expected);
 });
+tape('walkTree - Should return a subset of the tree if path does not resolve to value', t => {
+  t.plan(1);
+
+  const tree = {
+    people: { 1: { name: 'Tom', age: 28 } }
+  };
+  const path = ['people', 1];
+  const expected = { name: 'Tom', age: 28 };
+
+  t.deepEqual(walkTree(path, tree), expected);
+});
 tape('walkTree - Should return undefined if the path does exist in the tree', t => {
   t.plan(1);
 
   const tree = {
-    people: {
-      '1': { name: 'Tom', age: 28 }
-    }
+    people: { 1: { name: 'Tom', age: 28 } }
   };
   const path = ['people', 2, 'name'];
   const expected = undefined;
 
   t.equal(walkTree(path, tree), expected);
+});
+tape('walkTree - Should return full tree if path is empty', t => {
+  t.plan(1);
+
+  const tree = {
+    people: { 1: { name: 'Tom', age: 28 } }
+  };
+  const path = [];
+  const expected = {
+    people: { 1: { name: 'Tom', age: 28 } }
+  };
+
+  t.deepEqual(walkTree(path, tree), expected);
+});
+
+
+tape('assocPath - adds value to target at path when path does not already exist in target', t => {
+  t.plan(1);
+
+  const path = ['people', 2, 'name'];
+  const target = {
+    people: { 1: { name: 'Tom' } }
+  };
+  const value = { $type: 'atom', value: 'Thom' };
+
+  t.deepEqual(assocPath(path, value, target), {
+    people: {
+      1: { name: 'Tom' },
+      2: { name: { $type: 'atom', value: 'Thom' } }
+    }
+  });
+});
+tape('assocPath - overwrites existing target value when path exists in target', t => {
+  t.plan(1);
+
+  const path = ['people', 1, 'name'];
+  const target = {
+    people: { 1: { name: 'Tom' } },
+    people: { 2: { name: 'Dick' } }
+  };
+  const value = { $type: 'atom', value: 'Thom' };
+
+  t.deepEqual(assocPath(path, value, target), {
+    people: {
+      1: { name: { $type: 'atom', value: 'Thom' } },
+      2: { name: 'Dick' }
+    }
+  });
 });
 
 
@@ -232,7 +288,7 @@ tape('expandPaths - Should expand two pathSets with ranges into a list of paths'
 });
 
 
-tape('mergeTrees - Should merge two trees with disjoint leaf nodes', t => {
+tape('mergeGraphs - Should merge two refless-graphs with disjoint leaf nodes', t => {
   t.plan(2);
 
   const target = {
@@ -251,13 +307,14 @@ tape('mergeTrees - Should merge two trees with disjoint leaf nodes', t => {
     }
   };
 
-  t.deepEqual(mergeTrees(target, source), expected, 'merges small tree into large tree');
-  t.deepEqual(mergeTrees(source, target), expected, 'merges large tree into small tree');
+  t.deepEqual(mergeGraphs(target, source), expected, 'merges small graph into large graph');
+  t.deepEqual(mergeGraphs(source, target), expected, 'merges large graph into small graph');
 });
-tape('mergeTrees - Should merge two trees and overwrite source with target for overlapping leaf nodes', t => {
+tape('mergeGraphs - Should merge two refless-graphs and overwrite target with source for overlapping leaf nodes', t => {
   t.plan(1);
 
   const target = {
+    graphId: 1,
     people: {
       1: {
         name: "Tom",
@@ -267,6 +324,7 @@ tape('mergeTrees - Should merge two trees and overwrite source with target for o
   };
 
   const source = {
+    graphId: 2,
     people: {
       1: {
         name: "Thom",
@@ -275,12 +333,86 @@ tape('mergeTrees - Should merge two trees and overwrite source with target for o
     }
   };
 
-  t.deepEqual(mergeTrees(target, source), {
+  t.deepEqual(mergeGraphs(target, source), {
+    graphId: 2,
     people: {
       1: {
         name: "Thom",
         age: 28,
         height: 71
+      }
+    }
+  });
+});
+tape('mergeGraphs - Should resolve refs in source graph when merging two graphs with overlapping leaf nodes', t => {
+  t.plan(1);
+
+  const target = {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      }
+    },
+    peopleById: {
+      id_1: {
+        name: "Tom",
+        age: 28
+      }
+    }
+  };
+
+  const source = {
+    people: {
+      0: {
+        name: "Thom",
+        height: 71
+      }
+    }
+  };
+
+  t.deepEqual(mergeGraphs(target, source), {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      }
+    },
+    peopleById: {
+      id_1: {
+        name: "Thom",
+        age: 28,
+        height: 71
+      }
+    }
+  });
+});
+tape('mergeGraphs - Should update ref path in source graph when merging two graphs with overlapping ref nodes', t => {
+  t.plan(1);
+
+  const target = {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      }
+    }
+  };
+
+  const source = {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_2']
+      }
+    }
+  };
+
+  t.deepEqual(mergeGraphs(target, source), {
+    people: {
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_2']
       }
     }
   });

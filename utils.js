@@ -23,13 +23,25 @@ const isJSONGraphEnvelope = JSONGraphEnvelope =>
 
 
 const walkTree = (path, tree) => {
-  if (path.length === 1) {
+  if (path.length === 0) {
+    return tree;
+  } else if (path.length === 1) {
     return tree[path[0]];
-  }
-  if (tree[path[0]]) {
+  } else if (path[0] in tree) {
     return walkTree(path.slice(1), tree[path[0]]);
   }
   return undefined;
+};
+
+
+const assocPath = (path, value, target) => {
+  if (path.length === 1) {
+    return Object.assign({}, target, { [path[0]]: value });
+  } else if (!(path[0] in target)) {
+  return Object.assign({}, target, { [path[0]]: assocPath(path.slice(1), value, {}) });
+  }
+
+  return Object.assign({}, target, { [path[0]]: assocPath(path.slice(1), value, target[path[0]]) });
 };
 
 
@@ -82,17 +94,39 @@ const expandPaths = paths => {
 
 // NOTE - target/source can still reference nested objects in output
 // NOTE - won't recursively merge arrays
-const mergeTrees = (target, source) => {
-  return Object.keys(source).reduce((merged, sourceKey) => {
+const mergeTrees = (target, source) =>
+  Object.keys(source).reduce((merged, sourceKey) => {
     const sourceValue = source[sourceKey];
 
     if ((Array.isArray(sourceValue) || typeof sourceValue !== 'object') || !(sourceKey in target)) {
       // base case 1: sourceValue is an array or non-object primitive
       // base case 2: sourceKey does not exist in target
       return Object.assign({}, merged, { [sourceKey]: sourceValue });
-    } else {
-      return Object.assign({}, merged, { [sourceKey]: mergeTrees(merged[sourceKey], sourceValue) });
     }
+
+    return Object.assign({}, merged, { [sourceKey]: mergeTrees(merged[sourceKey], sourceValue) });
+  }, target);
+
+
+// NOTE - target/source can still reference nested objects in output
+// NOTE - won't recursively merge arrays
+const mergeGraphs = (target, source, targetPath = []) => {
+  return Object.keys(source).reduce((merged, sourceKey) => {
+    const sourceValue = source[sourceKey];
+    const subMerged = walkTree(targetPath, merged);
+
+    if ((Array.isArray(sourceValue) || typeof sourceValue !== 'object') || !(sourceKey in subMerged)) {
+      // base case 1: sourceValue is an array or non-object primitive
+      // base case 2: sourceKey does not exist in target
+      return assocPath([...targetPath, sourceKey], sourceValue, merged);
+    } else if (subMerged[sourceKey].$type === 'ref' && sourceValue.$type !== 'ref') {
+      // if encountering a ref, and sourceValue is not itself a ref, resolve
+      // (if sourceValue _is_ a ref, it should replace the target ref)
+      return mergeGraphs(merged, sourceValue, subMerged[sourceKey].value);
+      // return assocPath([...targetPath, sourceKey], { [sourceKey]: mergeGraphs(merged, sourceValue) }, merged);
+    }
+
+    return mergeGraphs(merged, sourceValue, [...targetPath, sourceKey]);
   }, target);
 };
 
@@ -132,6 +166,7 @@ const extractSubTreeByPaths = (paths, graph) => {
 };
 
 module.exports.walkTree = walkTree;
+module.exports.assocPath = assocPath;
 module.exports.isPathValues = isPathValues;
 module.exports.isJSONGraphEnvelope = isJSONGraphEnvelope;
 module.exports.pathValue2Tree = pathValue2Tree;
@@ -139,5 +174,6 @@ module.exports.pathValues2JSONGraphEnvelope = pathValues2JSONGraphEnvelope;
 module.exports.expandPath = expandPath;
 module.exports.expandPaths = expandPaths;
 module.exports.mergeTrees = mergeTrees;
+module.exports.mergeGraphs = mergeGraphs;
 module.exports.extractSubTreeByPath = extractSubTreeByPath;
 module.exports.extractSubTreeByPaths = extractSubTreeByPaths;

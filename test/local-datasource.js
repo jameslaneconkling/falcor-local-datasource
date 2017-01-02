@@ -23,7 +23,22 @@ const setupModel = () => {
             value: peopleLength + args.length
           });
       },
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      },
       1: {
+        $type: 'ref',
+        value: ['peopleById', 'id_2']
+      },
+      2: {
+        $type: 'ref',
+        value: ['peopleById', 'id_3']
+      },
+      length: 3
+    },
+    peopleById: {
+      id_1: {
         name: 'Tom',
         age: 28,
         height: 71,
@@ -42,7 +57,7 @@ const setupModel = () => {
           }
         }
       },
-      2: {
+      id_2: {
         name: 'Dick',
         age: 28,
         height: 70,
@@ -61,7 +76,7 @@ const setupModel = () => {
           }
         }
       },
-      3: {
+      id_3: {
         name: 'Harry',
         age: 32,
         height: 68,
@@ -79,10 +94,7 @@ const setupModel = () => {
             path: ['people', 2]
           }
         }
-      },
-      // falcor router is able to calculate virtual values like length on the fly
-      // unless local-datasource can respond to a get as a function...
-      length: 3
+      }
     },
     places: {
       was: {
@@ -110,8 +122,8 @@ tape('model.get - Retrieves JSONGraphEnvelope from graph', t => {
   const model = setupModel();
   const expectedResponse = {
     json: {
-      people: {
-        1: {
+      peopleById: {
+        id_1: {
           name: 'Tom',
           age: 28
         }
@@ -119,7 +131,7 @@ tape('model.get - Retrieves JSONGraphEnvelope from graph', t => {
     }
   };
 
-  model.get(['people', 1, ['name', 'age']])
+  model.get(['peopleById', 'id_1', ['name', 'age']])
     .subscribe(res => {
       t.deepEqual(res, expectedResponse);
     });
@@ -134,8 +146,8 @@ tape('model.set - Updates Graph', t => {
   const model = setupModel();
   const expectedResponse = {
     json: {
-      people: {
-        1: {
+      peopleById: {
+        id_1: {
           name: 'Thom'
         }
       }
@@ -143,17 +155,17 @@ tape('model.set - Updates Graph', t => {
   };
 
   model.set({
-    path: ['people', 1, ['name']],
+    path: ['peopleById', 'id_1', 'name'],
     value: 'Thom'
   })
     .flatMap(res => {
       t.deepEqual(res, expectedResponse, 'model.set responds with correct JSONEnvelope');
 
-      t.deepEqual(model.getCache(['people', 1, ['name']]), { people: { 1: { name: 'Thom' } } }, 'model cache is updated after model.set');
+      t.deepEqual(model.getCache(['peopleById', 'id_1', 'name']), { peopleById: { id_1: { name: 'Thom' } } }, 'model cache is updated after model.set');
 
-      model.invalidate(['people', 1, ['name']]);
+      model.invalidate(['peopleById', 'id_1', 'name']);
 
-      return model.get(['people', 1, ['name']]);
+      return model.get(['peopleById', 'id_1', 'name']);
     })
     .subscribe(res => {
       t.deepEqual(res, expectedResponse, 'datasource cache is updated after model.set');
@@ -184,20 +196,13 @@ tape('model.call - Returns thisPaths from model.call', t => {
 
   const model = setupModel();
   const callPath = ['people', 'create'];
-  const args = [{ name: 'Harry Jr.', age: 21 }];
+  const args = [{ name: 'Harry Jr.' }];
   const refPaths = [];
   const thisPaths = [
-    ['length'],
-    [1, ['name', 'age']]
+    ['length']
   ];
   const expectedResponse = {
-    people: {
-      1: {
-        name: 'Tom',
-        age: 28
-      },
-      length: 4
-    }
+    people: { length: 4 }
   };
 
   model.call(callPath, args, refPaths, thisPaths)
@@ -205,3 +210,27 @@ tape('model.call - Returns thisPaths from model.call', t => {
       t.deepEqual(res.json, expectedResponse);
     });
 });
+
+
+// tape.only('model.call - Returns refPaths from model.call', t => {
+//   t.plan(1);
+
+//   const model = setupModel();
+//   const callPath = ['people', 'create'];
+//   const args = [{ name: 'Harry Jr.', age: 21 }];
+//   const refPaths = [['name', 'age']];
+//   const thisPaths = [];
+//   const expectedResponse = {
+//     people: {
+//       4: {
+//         name: 'Harry Jr.',
+//         age: 21
+//       },
+//     }
+//   };
+
+//   model.call(callPath, args, refPaths, thisPaths)
+//     .subscribe(res => {
+//       t.deepEqual(res.json, expectedResponse);
+//     });
+// });
