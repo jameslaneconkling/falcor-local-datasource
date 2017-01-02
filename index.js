@@ -7,6 +7,7 @@ const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnve
 const extractSubTreeByPath = require('./utils').extractSubTreeByPath;
 const extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 const mergeTrees = require('./utils').mergeTrees;
+const mergeGraphs = require('./utils').mergeGraphs;
 
 
 module.exports = class LocalDatasource {
@@ -33,7 +34,7 @@ module.exports = class LocalDatasource {
   }
 
   set(jsonGraphEnvelope) {
-    this._graph = mergeTrees(this._graph, jsonGraphEnvelope.jsonGraph);
+    this._graph = mergeGraphs(this._graph, jsonGraphEnvelope.jsonGraph);
 
     return Rx.Observable.just({
       jsonGraph: extractSubTreeByPaths(jsonGraphEnvelope.paths, this._graph),

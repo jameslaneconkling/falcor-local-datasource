@@ -136,6 +136,24 @@ tape('model.get - Retrieves JSONGraphEnvelope from graph', t => {
       t.deepEqual(res, expectedResponse);
     });
 });
+tape('model.get - Resolves refs when retrieving JSONGraphEnvelope from graph', t => {
+  t.plan(1);
+
+  const model = setupModel();
+  const expectedResponse = {
+    json: {
+      people: {
+        0: { name: 'Tom', age: 28 },
+        1: { name: 'Dick', age: 28 }
+      }
+    }
+  };
+
+  model.get(['people', { to: 1 }, ['name', 'age']])
+    .subscribe(res => {
+      t.deepEqual(res, expectedResponse);
+    });
+});
 tape.skip('Does what on model.get with incomplete path?');
 tape.skip('Does what on model.get for path that does not exist in graph');
 
@@ -166,6 +184,37 @@ tape('model.set - Updates Graph', t => {
       model.invalidate(['peopleById', 'id_1', 'name']);
 
       return model.get(['peopleById', 'id_1', 'name']);
+    })
+    .subscribe(res => {
+      t.deepEqual(res, expectedResponse, 'datasource cache is updated after model.set');
+    });
+});
+tape('model.set - Resolves refs when updating graph', t => {
+  t.plan(3);
+
+  const model = setupModel();
+  const expectedResponse = {
+    json: {
+      people: {
+        0: {
+          name: 'Thom'
+        }
+      }
+    }
+  };
+
+  model.set({
+    path: ['people', 0, 'name'],
+    value: 'Thom'
+  })
+    .flatMap(res => {
+      t.deepEqual(res, expectedResponse, 'model.set responds with correct JSONEnvelope');
+
+      t.deepEqual(model.getCache(['people', 0, 'name']), { people: { 0: { name: 'Thom' } } }, 'model cache is updated after model.set');
+
+      model.invalidate(['people', 0, 'name']);
+
+      return model.get(['people', 0, 'name']);
     })
     .subscribe(res => {
       t.deepEqual(res, expectedResponse, 'datasource cache is updated after model.set');

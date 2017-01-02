@@ -38,7 +38,7 @@ const assocPath = (path, value, target) => {
   if (path.length === 1) {
     return Object.assign({}, target, { [path[0]]: value });
   } else if (!(path[0] in target)) {
-  return Object.assign({}, target, { [path[0]]: assocPath(path.slice(1), value, {}) });
+    return Object.assign({}, target, { [path[0]]: assocPath(path.slice(1), value, {}) });
   }
 
   return Object.assign({}, target, { [path[0]]: assocPath(path.slice(1), value, target[path[0]]) });
@@ -110,6 +110,8 @@ const mergeTrees = (target, source) =>
 
 // NOTE - target/source can still reference nested objects in output
 // NOTE - won't recursively merge arrays
+// TODO - this makes more recursive passes than necessary,
+//        simplify by merging JSONGraphEnvelope into graph
 const mergeGraphs = (target, source, targetPath = []) => {
   return Object.keys(source).reduce((merged, sourceKey) => {
     const sourceValue = source[sourceKey];
@@ -123,7 +125,6 @@ const mergeGraphs = (target, source, targetPath = []) => {
       // if encountering a ref, and sourceValue is not itself a ref, resolve
       // (if sourceValue _is_ a ref, it should replace the target ref)
       return mergeGraphs(merged, sourceValue, subMerged[sourceKey].value);
-      // return assocPath([...targetPath, sourceKey], { [sourceKey]: mergeGraphs(merged, sourceValue) }, merged);
     }
 
     return mergeGraphs(merged, sourceValue, [...targetPath, sourceKey]);
