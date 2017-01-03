@@ -9,13 +9,22 @@ const setupModel = () => {
         // create a new person node for each object in args
         const peopleLength = graph.people.length;
 
-        return args.map((newPerson, idx) =>
-          Object.keys(newPerson).map(field => {
-            return {
-              path: ['people', peopleLength + idx + 1, field],
+        return args.map((newPerson, idx) => {
+          const newPersonId = `id_${peopleLength + idx + 1}`;
+
+          return Object.keys(newPerson)
+            .map(field => ({
+              path: ['peopleById', newPersonId, field],
               value: newPerson[field]
-            };
-          }))
+            }))
+            .concat({
+              path: ['people', peopleLength + idx],
+              value: {
+                $type: 'ref',
+                value: ['peopleById', newPersonId]
+              }
+            })
+        })
           .reduce((flatMap, pathValue) => [...flatMap, ...pathValue])
           .concat({
             path: ['people', 'length'],

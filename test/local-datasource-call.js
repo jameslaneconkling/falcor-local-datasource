@@ -39,20 +39,20 @@ tape('model.call - Returns thisPaths from model.call', t => {
 });
 
 
-tape.skip('model.call - Returns refPaths from model.call', t => {
+tape('model.call - Returns refPaths from model.call', t => {
   t.plan(1);
 
   const model = setupModel();
   const callPath = ['people', 'create'];
   const args = [{ name: 'Harry Jr.', age: 21 }];
-  const refPaths = [['name', 'age']];
+  const refPaths = [[['name', 'age']]];
   const thisPaths = [];
   const expectedResponse = {
     people: {
-      4: {
+      3: {
         name: 'Harry Jr.',
         age: 21
-      },
+      }
     }
   };
 

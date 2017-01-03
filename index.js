@@ -3,10 +3,10 @@ const Rx = require('rx');
 const walkTree = require('./utils').walkTree;
 const isPathValues = require('./utils').isPathValues;
 const isJSONGraphEnvelope = require('./utils').isJSONGraphEnvelope;
+const expandPaths = require('./utils').expandPaths;
 const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 const extractSubTreeByPath = require('./utils').extractSubTreeByPath;
 const extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
-const mergeTrees = require('./utils').mergeTrees;
 const mergeGraphs = require('./utils').mergeGraphs;
 
 
@@ -55,7 +55,7 @@ module.exports = class LocalDatasource {
     }
 
     // merge call response into graph
-    this._graph = mergeTrees(this._graph, callResponse.jsonGraph);
+    this._graph = mergeGraphs(this._graph, callResponse.jsonGraph);
 
     let response = {
       jsonGraph: {},
@@ -64,19 +64,27 @@ module.exports = class LocalDatasource {
 
     // add thisPaths to response
     response = {
-      jsonGraph: mergeTrees(response.jsonGraph, extractSubTreeByPaths(thisPaths, this._graph)),
+      jsonGraph: mergeGraphs(response.jsonGraph, extractSubTreeByPaths(thisPaths, this._graph)),
       paths: [...response.paths, ...thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath])]
     };
 
     // add refPaths to response
-    // response = refPaths.reduce((response, refPath) => {
-    //   return callResponse.paths.reduce((response, callResponsePath) => {
-    //     return Object.assign(response, {
-    //       jsonGraph: mergeTrees(response.jsonGraph, extractSubTreeByPaths([...callResponse.paths, ...refPath])),
-    //       paths: [...response.paths, [...callResponse.paths, ...refPath]]
-    //     });
-    //   }, response)
-    // }, response);
+    expandPaths(callResponse.paths)
+      .map(path => ({
+        path,
+        value: walkTree(path, callResponse.jsonGraph)
+      }))
+      .filter(pathValue => pathValue.value.$type === 'ref')
+      .forEach(callResponseRefPathValue => {
+        refPaths.forEach(refPath => {
+          const refFullPath = [...callResponseRefPathValue.path, ...refPath];
+
+          response = {
+            jsonGraph: mergeGraphs(response.jsonGraph, extractSubTreeByPaths([refFullPath], this._graph)),
+            paths: [...response.paths, refFullPath]
+          };
+        });
+      });
 
     return Rx.Observable.just(response);
   }
