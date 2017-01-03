@@ -4,7 +4,8 @@
   "description": "An implementation of the Falcor DataSource interface that exposes the standard get/set/call methods on a local JSONGraph object",
   "main": "index.js",
   "scripts": {
-    "test": "node test/ | tap-summary"
+    "test": "node test/ | tap-summary",
+    "lint": "eslint ."
   },
   "license": "ISC",
   "repository": {
@@ -16,6 +17,9 @@
   ],
   "author": "jameslaneconkling",
   "devDependencies": {
+    "eslint": "^3.12.2",
+    "eslint-config-airbnb-base": "^11.0.0",
+    "eslint-plugin-import": "^2.2.0",
     "tape": "^4.6.3"
   },
   "dependencies": {

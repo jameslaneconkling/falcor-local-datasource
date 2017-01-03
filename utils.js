@@ -1,12 +1,11 @@
-// TODO:
-// * add type defs
 const collapse = require('falcor-path-utils').collapse;
 
 
 const range = (from = 0, to) => {
   const list = [];
   while (from <= to) {
-    list.push(from++);
+    list.push(from);
+    from += 1;
   }
   return list;
 };
@@ -54,22 +53,22 @@ const pathValue2Tree = (pathValue, tree = {}) => {
   }
 
   return Object.assign(tree, {
-    [pathValue.path[0]]: pathValue2Tree({ path: pathValue.path.slice(1), value: pathValue.value }, tree[pathValue.path[0]])
+    [pathValue.path[0]]: pathValue2Tree(
+      { path: pathValue.path.slice(1), value: pathValue.value },
+      tree[pathValue.path[0]]
+    )
   });
 };
 
 
-const pathValues2JSONGraphEnvelope = pathValues => {
-  const jsonGraph = pathValues.reduce((tree, pathValue) => pathValue2Tree(pathValue, tree), {});
-
-  const paths = collapse(pathValues.map(pathValue => pathValue.path));
-
-  return { jsonGraph, paths };
-};
+const pathValues2JSONGraphEnvelope = pathValues => ({
+  jsonGraph: pathValues.reduce((tree, pathValue) => pathValue2Tree(pathValue, tree), {}),
+  paths: collapse(pathValues.map(pathValue => pathValue.path))
+});
 
 
-const expandPath = pathOrPathSet => {
-  return pathOrPathSet.reduce((paths, keyOrKeySet) => {
+const expandPath = pathOrPathSet =>
+  pathOrPathSet.reduce((paths, keyOrKeySet) => {
     if (Array.isArray(keyOrKeySet)) {
       // keySet, e.g. ['name', 'age']
       return keyOrKeySet.reduce((expandedPaths, key) =>
@@ -84,12 +83,10 @@ const expandPath = pathOrPathSet => {
     // key
     return paths.map(path => [...path, keyOrKeySet]);
   }, [[]]);
-};
 
 
-const expandPaths = paths => {
-  return paths.reduce((expandedPaths, path) => [...expandedPaths, ...expandPath(path)], []);
-};
+const expandPaths = paths =>
+  paths.reduce((expandedPaths, path) => [...expandedPaths, ...expandPath(path)], []);
 
 
 // NOTE - target/source can still reference nested objects in output
@@ -112,8 +109,8 @@ const mergeTrees = (target, source) =>
 // NOTE - won't recursively merge arrays
 // TODO - this makes more recursive passes than necessary,
 //        simplify by merging JSONGraphEnvelope into graph
-const mergeGraphs = (target, source, targetPath = []) => {
-  return Object.keys(source).reduce((merged, sourceKey) => {
+const mergeGraphs = (target, source, targetPath = []) =>
+  Object.keys(source).reduce((merged, sourceKey) => {
     const sourceValue = source[sourceKey];
     const subMerged = walkTree(targetPath, merged);
 
@@ -129,8 +126,6 @@ const mergeGraphs = (target, source, targetPath = []) => {
 
     return mergeGraphs(merged, sourceValue, [...targetPath, sourceKey]);
   }, target);
-};
-
 
 
 const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
@@ -154,17 +149,16 @@ const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
   return {
     [path[0]]: extractSubTreeByPath(path.slice(1), subTree[path[0]], graph)
   };
-}
-
-
-const extractSubTreeByPaths = (paths, graph) => {
-  // TODO - if extractSubTreeByPath could handle pathSets, rather than just paths,
-  // we could drop the expandPaths call and reduce the number of potential recursive
-  // passes through the graph
-  return expandPaths(paths).reduce((subTree, path) => {
-    return mergeTrees(subTree, extractSubTreeByPath(path, graph));
-  }, {});
 };
+
+
+// TODO - if extractSubTreeByPath could handle pathSets, rather than just paths,
+// we could drop the expandPaths call and reduce the number of potential recursive
+// passes through the graph
+const extractSubTreeByPaths = (paths, graph) =>
+  expandPaths(paths).reduce((subTree, path) => (
+    mergeTrees(subTree, extractSubTreeByPath(path, graph))
+  ), {});
 
 module.exports.walkTree = walkTree;
 module.exports.assocPath = assocPath;

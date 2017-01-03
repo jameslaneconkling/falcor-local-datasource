@@ -1,11 +1,9 @@
-const falcor = require( 'falcor');
 const Rx = require('rx');
 const walkTree = require('./utils').walkTree;
 const isPathValues = require('./utils').isPathValues;
 const isJSONGraphEnvelope = require('./utils').isJSONGraphEnvelope;
 const expandPaths = require('./utils').expandPaths;
 const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
-const extractSubTreeByPath = require('./utils').extractSubTreeByPath;
 const extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 const mergeGraphs = require('./utils').mergeGraphs;
 
@@ -13,20 +11,9 @@ const mergeGraphs = require('./utils').mergeGraphs;
 module.exports = class LocalDatasource {
   constructor(graph = {}) {
     this._graph = graph;
-
-    // this._model = new falcor.Model({ graph })
-    //   ._materialize()
-    //   .boxValues()
-    //   .treatErrorsAsValues();
   }
 
   get(paths) {
-    // return this._model.get(...paths)._toJSONG()
-    // return this._model.get(...paths)
-    //   .map(res => ({
-    //     jsonGraph: res.json
-    //   }));
-
     return Rx.Observable.just({
       jsonGraph: extractSubTreeByPaths(paths, this._graph),
       paths
@@ -38,7 +25,7 @@ module.exports = class LocalDatasource {
 
     return Rx.Observable.just({
       jsonGraph: extractSubTreeByPaths(jsonGraphEnvelope.paths, this._graph),
-      paths: jsonGraphEnvelope.path
+      paths: jsonGraphEnvelope.paths
     });
   }
 
@@ -73,8 +60,8 @@ module.exports = class LocalDatasource {
       .reduce((flatMap, fullRefPaths) => [...flatMap, ...fullRefPaths], []);
 
     // model will resolve empty envelope.jsonGraph object with a subsequent call to model.get
-    // if for some reason this turns out to be suboptimal, reimplement above to build envelope.jsonGraph
-    // while building envelope.paths
+    // if for some reason this turns out to be suboptimal, reimplement above to
+    // build envelope.jsonGraph while building envelope.paths
     // see branch: refactor/construct-call-jsongraph
     return Rx.Observable.just({
       jsonGraph: {},

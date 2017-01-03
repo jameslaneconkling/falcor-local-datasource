@@ -10,7 +10,7 @@ const extractSubTreeByPath = require('../utils').extractSubTreeByPath;
 const extractSubTreeByPaths = require('../utils').extractSubTreeByPaths;
 
 
-tape('walkTree - Should return the value in the tree at the specified value', t => {
+tape('walkTree - Should return the value in the tree at the specified value', (t) => {
   t.plan(1);
 
   const tree = {
@@ -21,7 +21,7 @@ tape('walkTree - Should return the value in the tree at the specified value', t 
 
   t.equal(walkTree(path, tree), expected);
 });
-tape('walkTree - Should return a subset of the tree if path does not resolve to value', t => {
+tape('walkTree - Should return a subset of the tree if path does not resolve to value', (t) => {
   t.plan(1);
 
   const tree = {
@@ -32,7 +32,7 @@ tape('walkTree - Should return a subset of the tree if path does not resolve to 
 
   t.deepEqual(walkTree(path, tree), expected);
 });
-tape('walkTree - Should return undefined if the path does exist in the tree', t => {
+tape('walkTree - Should return undefined if the path does exist in the tree', (t) => {
   t.plan(1);
 
   const tree = {
@@ -43,7 +43,7 @@ tape('walkTree - Should return undefined if the path does exist in the tree', t 
 
   t.equal(walkTree(path, tree), expected);
 });
-tape('walkTree - Should return full tree if path is empty', t => {
+tape('walkTree - Should return full tree if path is empty', (t) => {
   t.plan(1);
 
   const tree = {
@@ -58,7 +58,7 @@ tape('walkTree - Should return full tree if path is empty', t => {
 });
 
 
-tape('assocPath - adds value to target at path when path does not already exist in target', t => {
+tape('assocPath - adds value to target at path when path does not already exist in target', (t) => {
   t.plan(1);
 
   const path = ['people', 2, 'name'];
@@ -74,13 +74,15 @@ tape('assocPath - adds value to target at path when path does not already exist 
     }
   });
 });
-tape('assocPath - overwrites existing target value when path exists in target', t => {
+tape('assocPath - overwrites existing target value when path exists in target', (t) => {
   t.plan(1);
 
   const path = ['people', 1, 'name'];
   const target = {
-    people: { 1: { name: 'Tom' } },
-    people: { 2: { name: 'Dick' } }
+    people: {
+      1: { name: 'Tom' },
+      2: { name: 'Dick' }
+    }
   };
   const value = { $type: 'atom', value: 'Thom' };
 
@@ -93,7 +95,7 @@ tape('assocPath - overwrites existing target value when path exists in target', 
 });
 
 
-tape('pathValue2Tree - Should convert a pathValue to a tree', t => {
+tape('pathValue2Tree - Should convert a pathValue to a tree', (t) => {
   t.plan(1);
 
   const pathValue = {
@@ -106,7 +108,7 @@ tape('pathValue2Tree - Should convert a pathValue to a tree', t => {
 
   t.deepEqual(pathValue2Tree(pathValue, {}), expected);
 });
-tape('pathValue2Tree - Should merge a pathValue into a non-overlapping tree', t => {
+tape('pathValue2Tree - Should merge a pathValue into a non-overlapping tree', (t) => {
   t.plan(1);
 
   const pathValue = {
@@ -125,7 +127,7 @@ tape('pathValue2Tree - Should merge a pathValue into a non-overlapping tree', t 
 
   t.deepEqual(pathValue2Tree(pathValue, tree), expected);
 });
-tape('pathValue2Tree - Should merge a pathValue into an overlapping tree', t => {
+tape('pathValue2Tree - Should merge a pathValue into an overlapping tree', (t) => {
   t.plan(1);
 
   const pathValue = {
@@ -143,7 +145,7 @@ tape('pathValue2Tree - Should merge a pathValue into an overlapping tree', t => 
 });
 
 
-tape('pathValues2JSONGraphEnvelope - Should convert multiple pathValues to a jsonGraphEnvelope', t => {
+tape('pathValues2JSONGraphEnvelope - Should convert multiple pathValues to a jsonGraphEnvelope', (t) => {
   t.plan(1);
 
   const pathValues = [
@@ -177,7 +179,7 @@ tape('pathValues2JSONGraphEnvelope - Should convert multiple pathValues to a jso
 });
 
 
-tape('expandPath - Should expand a simple path into a list of paths', t => {
+tape('expandPath - Should expand a simple path into a list of paths', (t) => {
   t.plan(1);
 
   const path = ['people', 1, 'age'];
@@ -185,7 +187,7 @@ tape('expandPath - Should expand a simple path into a list of paths', t => {
 
   t.deepEqual(expandPath(path), expected);
 });
-tape('expandPath - Should expand a path with a single keySet of length 2 into a list of 2 paths', t => {
+tape('expandPath - Should expand a path with a single keySet of length 2 into a list of 2 paths', (t) => {
   t.plan(1);
 
   const path = ['people', 1, ['age', 'name']];
@@ -196,7 +198,7 @@ tape('expandPath - Should expand a path with a single keySet of length 2 into a 
 
   t.deepEqual(expandPath(path), expected);
 });
-tape('expandPath - Should expand a path with two keySets of length 2 and 3 into a list of 6 paths', t => {
+tape('expandPath - Should expand a path with two keySets of length 2 and 3 into a list of 6 paths', (t) => {
   t.plan(1);
 
   const path = ['people', [1, 2, 4], ['age', 'name']];
@@ -211,19 +213,19 @@ tape('expandPath - Should expand a path with two keySets of length 2 and 3 into 
 
   t.deepEqual(expandPath(path), expected);
 });
-tape('expandPath - Should expand a path with range from key into a list of paths', t => {
+tape('expandPath - Should expand a path with range from key into a list of paths', (t) => {
   t.plan(1);
 
-  const path = ['people', {to: 2}, 'age'];
+  const path = ['people', { to: 2 }, 'age'];
   const expected = [
     ['people', 0, 'age'],
     ['people', 1, 'age'],
-    ['people', 2, 'age'],
+    ['people', 2, 'age']
   ];
 
   t.deepEqual(expandPath(path), expected);
 });
-tape('expandPath - Should expand a path with range and keySet into a list of paths', t => {
+tape('expandPath - Should expand a path with range and keySet into a list of paths', (t) => {
   t.plan(1);
 
   const path = ['people', { from: 1, to: 3 }, ['age', 'name']];
@@ -240,7 +242,7 @@ tape('expandPath - Should expand a path with range and keySet into a list of pat
 });
 
 
-tape('expandPaths - Should expand two simple paths into a list of 2 paths', t => {
+tape('expandPaths - Should expand two simple paths into a list of 2 paths', (t) => {
   t.plan(1);
 
   const paths = [
@@ -254,7 +256,7 @@ tape('expandPaths - Should expand two simple paths into a list of 2 paths', t =>
 
   t.deepEqual(expandPaths(paths), expected);
 });
-tape('expandPaths - Should expand two pathSets into a list of paths', t => {
+tape('expandPaths - Should expand two pathSets into a list of paths', (t) => {
   t.plan(1);
 
   const paths = [
@@ -270,7 +272,7 @@ tape('expandPaths - Should expand two pathSets into a list of paths', t => {
 
   t.deepEqual(expandPaths(paths), expected);
 });
-tape('expandPaths - Should expand two pathSets with ranges into a list of paths', t => {
+tape('expandPaths - Should expand two pathSets with ranges into a list of paths', (t) => {
   t.plan(1);
 
   const paths = [
@@ -288,7 +290,7 @@ tape('expandPaths - Should expand two pathSets with ranges into a list of paths'
 });
 
 
-tape('mergeGraphs - Should merge two refless-graphs with disjoint leaf nodes', t => {
+tape('mergeGraphs - Should merge two refless-graphs with disjoint leaf nodes', (t) => {
   t.plan(2);
 
   const target = {
@@ -310,14 +312,14 @@ tape('mergeGraphs - Should merge two refless-graphs with disjoint leaf nodes', t
   t.deepEqual(mergeGraphs(target, source), expected, 'merges small graph into large graph');
   t.deepEqual(mergeGraphs(source, target), expected, 'merges large graph into small graph');
 });
-tape('mergeGraphs - Should merge two refless-graphs and overwrite target with source for overlapping leaf nodes', t => {
+tape('mergeGraphs - Should merge two refless-graphs and overwrite target with source for overlapping leaf nodes', (t) => {
   t.plan(1);
 
   const target = {
     graphId: 1,
     people: {
       1: {
-        name: "Tom",
+        name: 'Tom',
         age: 28
       }
     }
@@ -327,7 +329,7 @@ tape('mergeGraphs - Should merge two refless-graphs and overwrite target with so
     graphId: 2,
     people: {
       1: {
-        name: "Thom",
+        name: 'Thom',
         height: 71
       }
     }
@@ -337,14 +339,14 @@ tape('mergeGraphs - Should merge two refless-graphs and overwrite target with so
     graphId: 2,
     people: {
       1: {
-        name: "Thom",
+        name: 'Thom',
         age: 28,
         height: 71
       }
     }
   });
 });
-tape('mergeGraphs - Should resolve refs in source graph when merging two graphs with overlapping leaf nodes', t => {
+tape('mergeGraphs - Should resolve refs in source graph when merging two graphs with overlapping leaf nodes', (t) => {
   t.plan(1);
 
   const target = {
@@ -356,7 +358,7 @@ tape('mergeGraphs - Should resolve refs in source graph when merging two graphs 
     },
     peopleById: {
       id_1: {
-        name: "Tom",
+        name: 'Tom',
         age: 28
       }
     }
@@ -365,7 +367,7 @@ tape('mergeGraphs - Should resolve refs in source graph when merging two graphs 
   const source = {
     people: {
       0: {
-        name: "Thom",
+        name: 'Thom',
         height: 71
       }
     }
@@ -380,14 +382,14 @@ tape('mergeGraphs - Should resolve refs in source graph when merging two graphs 
     },
     peopleById: {
       id_1: {
-        name: "Thom",
+        name: 'Thom',
         age: 28,
         height: 71
       }
     }
   });
 });
-tape('mergeGraphs - Should update ref path in source graph when merging two graphs with overlapping ref nodes', t => {
+tape('mergeGraphs - Should update ref path in source graph when merging two graphs with overlapping ref nodes', (t) => {
   t.plan(1);
 
   const target = {
@@ -419,13 +421,13 @@ tape('mergeGraphs - Should update ref path in source graph when merging two grap
 });
 
 
-tape('extractSubTreeByPath - Should extract sub tree from tree that contains path', t => {
+tape('extractSubTreeByPath - Should extract sub tree from tree that contains path', (t) => {
   t.plan(1);
 
   const tree = {
     people: {
-      '1': { name: 'Tom', age: 28 },
-      '2': { name: 'Dick' },
+      1: { name: 'Tom', age: 28 },
+      2: { name: 'Dick' }
     }
   };
   const path = ['people', 1, 'age'];
@@ -435,7 +437,7 @@ tape('extractSubTreeByPath - Should extract sub tree from tree that contains pat
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
-tape('extractSubTreeByPath - Should resolve refs when extracting sub tree from tree that contains path', t => {
+tape('extractSubTreeByPath - Should resolve refs when extracting sub tree from tree that contains path', (t) => {
   t.plan(1);
 
   const tree = {
@@ -456,13 +458,14 @@ tape('extractSubTreeByPath - Should resolve refs when extracting sub tree from t
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
-// Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
-tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path', t => {
+// Unclear what the expected behavior should be.
+// calling GET w/ the below path on a model w/ local cache returns the following
+tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path', (t) => {
   t.plan(1);
 
   const tree = {
     people: {
-      '1': { name: 'Tom', age: 28 },
+      1: { name: 'Tom', age: 28 }
     }
   };
   const path = ['people', 1];
@@ -472,13 +475,14 @@ tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node fo
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
-// Unclear what the expected behavior should be.  calling GET w/ the below path on a model w/ local cache returns the following
-tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for non-existant path in tree', t => {
+// Unclear what the expected behavior should be.
+// calling GET w/ the below path on a model w/ local cache returns the following
+tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for non-existant path in tree', (t) => {
   t.plan(1);
 
   const tree = {
     people: {
-      '1': { name: 'Tom', age: 28 },
+      1: { name: 'Tom', age: 28 }
     }
   };
   const path = ['places', 1, 'name'];
@@ -490,12 +494,12 @@ tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node fo
 });
 
 
-tape('extractSubTreeByPaths - Should return sub tree from pathSet', t => {
+tape('extractSubTreeByPaths - Should return sub tree from pathSet', (t) => {
   t.plan(1);
 
   const tree = {
     people: {
-      '1': { name: 'Tom', age: 28 },
+      1: { name: 'Tom', age: 28 }
     }
   };
   const paths = [
@@ -507,7 +511,7 @@ tape('extractSubTreeByPaths - Should return sub tree from pathSet', t => {
 
   t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
 });
-tape('extractSubTreeByPaths - Should resolve refs when extracting sub tree from pathSet', t => {
+tape('extractSubTreeByPaths - Should resolve refs when extracting sub tree from pathSet', (t) => {
   t.plan(1);
 
   const tree = {
@@ -538,17 +542,17 @@ tape('extractSubTreeByPaths - Should resolve refs when extracting sub tree from 
 
   t.deepEqual(extractSubTreeByPaths(paths, tree), expected);
 });
-tape('extractSubTreeByPaths - Should return sub tree from multiple pathSets', t => {
+tape('extractSubTreeByPaths - Should return sub tree from multiple pathSets', (t) => {
   t.plan(1);
 
   const tree = {
     people: {
       0: { name: 'Tom', age: 28 },
-      1: { name: 'Dick', age: 26 },
+      1: { name: 'Dick', age: 26 }
     }
   };
   const paths = [
-    ['people', { to: 1 } , ['name', 'age']]
+    ['people', { to: 1 }, ['name', 'age']]
   ];
   const expected = {
     people: {

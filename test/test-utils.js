@@ -23,7 +23,7 @@ const setupModel = () => {
                 $type: 'ref',
                 value: ['peopleById', newPersonId]
               }
-            })
+            });
         })
           .reduce((flatMap, pathValue) => [...flatMap, ...pathValue])
           .concat({
