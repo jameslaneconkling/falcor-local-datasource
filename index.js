@@ -63,9 +63,10 @@ module.exports = class LocalDatasource {
     };
 
     // add thisPaths to response
+    const fullThisPaths = thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath]);
     response = {
-      jsonGraph: mergeGraphs(response.jsonGraph, extractSubTreeByPaths(thisPaths, this._graph)),
-      paths: [...response.paths, ...thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath])]
+      jsonGraph: mergeGraphs(response.jsonGraph, extractSubTreeByPaths(fullThisPaths, this._graph)),
+      paths: [...response.paths, ...fullThisPaths]
     };
 
     // add refPaths to response

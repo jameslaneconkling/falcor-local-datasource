@@ -26,10 +26,14 @@ tape('model.call - Returns thisPaths from model.call', t => {
   const args = [{ name: 'Harry Jr.' }];
   const refPaths = [];
   const thisPaths = [
-    ['length']
+    ['length'],
+    [0, 'name']
   ];
   const expectedResponse = {
-    people: { length: 4 }
+    people: {
+      length: 4,
+      0: { name: 'Tom' }
+    }
   };
 
   model.call(callPath, args, refPaths, thisPaths)
