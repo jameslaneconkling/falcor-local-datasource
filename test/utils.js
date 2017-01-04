@@ -1,13 +1,13 @@
 const tape = require('tape');
-const walkTree = require('../utils').walkTree;
-const assocPath = require('../utils').assocPath;
-const pathValue2Tree = require('../utils').pathValue2Tree;
-const pathValues2JSONGraphEnvelope = require('../utils').pathValues2JSONGraphEnvelope;
-const expandPath = require('../utils').expandPath;
-const expandPaths = require('../utils').expandPaths;
-const mergeGraphs = require('../utils').mergeGraphs;
-const extractSubTreeByPath = require('../utils').extractSubTreeByPath;
-const extractSubTreeByPaths = require('../utils').extractSubTreeByPaths;
+const walkTree = require('../src/utils').walkTree;
+const assocPath = require('../src/utils').assocPath;
+const pathValue2Tree = require('../src/utils').pathValue2Tree;
+const pathValues2JSONGraphEnvelope = require('../src/utils').pathValues2JSONGraphEnvelope;
+const expandPath = require('../src/utils').expandPath;
+const expandPaths = require('../src/utils').expandPaths;
+const mergeGraphs = require('../src/utils').mergeGraphs;
+const extractSubTreeByPath = require('../src/utils').extractSubTreeByPath;
+const extractSubTreeByPaths = require('../src/utils').extractSubTreeByPaths;
 
 
 tape('walkTree - Should return the value in the tree at the specified value', (t) => {

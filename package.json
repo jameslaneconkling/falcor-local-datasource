@@ -1,29 +1,32 @@
 {
   "name": "falcor-local-datasource",
   "version": "0.0.1",
-  "description": "An implementation of the Falcor DataSource interface that exposes the standard get/set/call methods on a local JSONGraph object",
-  "main": "index.js",
+  "description": "An implementation of the Falcor DataSource interface exposing a local JSONGraph object",
+  "main": "dist/index.js",
   "scripts": {
     "test": "node test/ | tap-summary",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "babel src/ -d dist/"
   },
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jameslaneconkling/falcor-supertest-datasource.git"
+    "url": "git+https://github.com/jameslaneconkling/falcor-local-datasource.git"
   },
   "keywords": [
     "falcor"
   ],
   "author": "jameslaneconkling",
   "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-env": "^1.1.4",
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.0",
     "eslint-plugin-import": "^2.2.0",
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "falcor": "^0.1.17"
   },
   "dependencies": {
-    "falcor": "^0.1.17",
     "falcor-path-utils": "^0.5.1",
     "rx": "^4.1.0"
   }

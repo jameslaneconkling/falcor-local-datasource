@@ -1,5 +1,5 @@
 const falcor = require('falcor');
-const LocalDatasource = require('../index');
+const LocalDatasource = require('../src/index');
 
 
 const setupModel = () => {
