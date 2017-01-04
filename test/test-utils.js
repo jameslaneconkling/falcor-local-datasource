@@ -5,7 +5,7 @@ const LocalDatasource = require('../src/index');
 const setupModel = () => {
   const cache = {
     people: {
-      create(graph, callPath, args) {
+      create(graph, args) {
         // create a new person node for each object in args
         const peopleLength = graph.people.length;
 

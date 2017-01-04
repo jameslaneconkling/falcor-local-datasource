@@ -30,7 +30,7 @@ module.exports = class LocalDatasource {
   }
 
   call(callPath, args, refPaths = [], thisPaths = []) {
-    let callResponse = walkTree(callPath, this._graph)(this._graph, callPath, args);
+    let callResponse = walkTree(callPath, this._graph)(this._graph, args);
 
     if (isPathValues(callResponse)) {
       callResponse = pathValues2JSONGraphEnvelope(callResponse);
