@@ -25,6 +25,8 @@ const graph = {
     add(graph, args) {
       const newTodoLabel = args[0];
       const todoCount = graph.todos.length;
+      // NOTE: this is a pretty naive way to derive new ids.  a more robust approach might generate unique ids using
+      // a specific node in the graph, or use a closure, or some other mechanism to yield unique incremental values
       const newId = `id_${todoCount}`;
 
       // return array of pathValues
