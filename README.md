@@ -70,7 +70,7 @@ model.call(['todos', 'add'], ['dupstep dance party'])
   });
 // > added new todo
 
-model.call(['todos', 'add'], ['jumpstyle'], [[['label', 'completed']]], ['length'])
+model.call(['todos', 'add'], ['jumpstyle'], [[['label', 'completed']]], [['length']])
   .subscribe(res => {
     console.log('returned', res.json);
   }, err => {
