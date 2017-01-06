@@ -4,7 +4,8 @@
   "description": "An implementation of the Falcor DataSource interface exposing a local JSONGraph object",
   "main": "dist/index.js",
   "scripts": {
-    "test": "node test/ | tap-summary",
+    "test": "node test/",
+    "test:pretty": "node test/ | tap-summary",
     "lint": "eslint .",
     "build": "babel src/ -d dist/",
     "validate": "npm run lint && npm run test && npm run build"

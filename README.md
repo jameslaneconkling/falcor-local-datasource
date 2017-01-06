@@ -95,11 +95,7 @@ npm install --save falcor-local-datasource
 ## Development
 To test:
 ```bash
-npm install -g tap-summary
 npm run test
-
-# or
-node test/
 ```
 
 To publish:
