@@ -2,8 +2,8 @@ const falcor = require('falcor');
 const LocalDatasource = require('../src/index');
 
 
-const setupModel = () => {
-  const cache = {
+const setupModel = (cache) => {
+  const defaultCache = {
     people: {
       create(graph, args) {
         // create a new person node for each object in args
@@ -120,7 +120,7 @@ const setupModel = () => {
     }
   };
 
-  return new falcor.Model({ source: new LocalDatasource(cache) });
+  return new falcor.Model({ source: new LocalDatasource(cache || defaultCache) });
 };
 
 
