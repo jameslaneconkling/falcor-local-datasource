@@ -129,18 +129,26 @@ const mergeGraphs = (target, source, targetPath = []) =>
 
 
 const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
+  // if subTree does not terminate at a value or sentinel, meaning path is incomplete,
+  // or if subTree does not contain path node, meaning path does not exist in subTree
+  // terminate the subTree w/ an empty atom leaf node
+  // otherwise, return value
   if (path.length === 1) {
-    // if subTree does not terminate at a value, meaning path is incomplete,
-    // or if subTree does not contain path node, meaning path does not exist in subTree
-    // terminate the subTree w/ an empty atom leaf node
-    // otherwise, return value
-    return {
-      [path[0]]: (typeof subTree[path[0]] === 'object' || typeof subTree[path[0]] === 'undefined') ? { $type: 'atom' } : subTree[path[0]]
-    };
+    if  ((typeof subTree[path[0]] === 'object' && !subTree[path[0]].$type) || typeof subTree[path[0]] === 'undefined') {
+      return { [path[0]]: { $type: 'atom', value: undefined } };
+    }
+
+    return { [path[0]]: subTree[path[0]] };
+  }
+
+  // if next node is a value or an atom, and path has not yet terminated,
+  // meaning path has overshot tree, don't continue walking tree and instead return value/atom
+  if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
+    return { [path[0]]: subTree[path[0]] };
   }
 
   // if next key in path points to a ref, resolve ref
-  if (subTree[path[0]] && subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
+  if (subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
     return {
       [path[0]]: extractSubTreeByPath(path.slice(1), walkTree(subTree[path[0]].value, graph), graph)
     };

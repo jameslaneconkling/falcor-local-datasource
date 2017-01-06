@@ -458,9 +458,8 @@ tape('extractSubTreeByPath - Should resolve refs when extracting sub tree from t
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
-// Unclear what the expected behavior should be.
-// calling GET w/ the below path on a model w/ local cache returns the following
-tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path', (t) => {
+
+tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for incomplete path [path that undershoots]', (t) => {
   t.plan(1);
 
   const tree = {
@@ -470,13 +469,12 @@ tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node fo
   };
   const path = ['people', 1];
   const expected = {
-    people: { 1: { $type: 'atom' } }
+    people: { 1: { $type: 'atom', value: undefined } }
   };
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
-// Unclear what the expected behavior should be.
-// calling GET w/ the below path on a model w/ local cache returns the following
+
 tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node for non-existant path in tree', (t) => {
   t.plan(1);
 
@@ -485,14 +483,29 @@ tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node fo
       1: { name: 'Tom', age: 28 }
     }
   };
-  const path = ['places', 1, 'name'];
+  const path = ['people', 1, 'shoeSize'];
   const expected = {
-    places: { 1: { name: { $type: 'atom' } } }
+    people: { 1: { shoeSize: { $type: 'atom', value: undefined } } }
   };
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);
 });
 
+tape('extractSubTreeByPath - Should return sub tree with last value node for path that overshoots', (t) => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      1: { name: 'Tom', age: 28 }
+    }
+  };
+  const path = ['people', 1, 'name', 'x', 'y', 'z'];
+  const expected = {
+    people: { 1: { name: 'Tom' } }
+  };
+
+  t.deepEqual(extractSubTreeByPath(path, tree), expected);
+});
 
 tape('extractSubTreeByPaths - Should return sub tree from pathSet', (t) => {
   t.plan(1);

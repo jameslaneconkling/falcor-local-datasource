@@ -2,7 +2,7 @@ const tape = require('tape');
 const setupModel = require('./test-utils').setupModel;
 
 
-tape('model.call - Exposes functions in the local JSONGraph store', (t) => {
+tape('model.call - Exposes graph functions in the local JSONGraph store', (t) => {
   t.plan(1);
 
   const model = setupModel();
