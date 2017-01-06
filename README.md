@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jameslaneconkling/falcor-local-datasource.svg?branch=master)](https://travis-ci.org/jameslaneconkling/falcor-local-datasource)
+
 # Falcor LocalDataSource
 
 Falcor DataSource interface exposing a local JSON Graph object for frontend storage.
