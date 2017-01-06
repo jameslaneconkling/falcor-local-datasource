@@ -107,4 +107,4 @@ npm run validate && npm publish
 
 ---
 
-Kudos to [Asa Ayers(https://github.com/AsaAyers) for the package name!
+Kudos to [Asa Ayers](https://github.com/AsaAyers) for the package name!
