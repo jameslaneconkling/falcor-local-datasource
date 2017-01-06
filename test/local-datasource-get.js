@@ -38,6 +38,27 @@ tape('model.get - Resolves refs when retrieving JSONGraphEnvelope from graph', (
     });
 });
 
+tape('model.get - Should return boxed values', (t) => {
+  t.plan(4);
+
+  const model = setupModel({
+    people: {
+      0: {
+        name: { $type: 'atom', value: 'Tom', $metadata: 'meta1' },
+        age: { $type: 'atom', value: 28, $metadata: 'meta2' }
+      }
+    }
+  }).boxValues();
+
+  model.get(['people', 0, ['name', 'age']])
+    .subscribe((res) => {
+      t.equal(res.json.people[0].name.value, 'Tom');
+      t.equal(res.json.people[0].name.$metadata, 'meta1');
+      t.equal(res.json.people[0].age.value, 28);
+      t.equal(res.json.people[0].age.$metadata, 'meta2');
+    });
+});
+
 tape('model.get - incomplete paths [paths that undershoot] should return sentinel from that part of graph', (t) => {
   t.plan(1);
 

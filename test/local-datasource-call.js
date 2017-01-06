@@ -65,3 +65,47 @@ tape('model.call - Returns refPaths from model.call', (t) => {
       t.deepEqual(res.json, expectedResponse);
     });
 });
+
+
+tape('model.call - Returns boxed values returned from graph functions', (t) => {
+  t.plan(2);
+
+  const model = setupModel({
+    people: {
+      create(graph, args) {
+        return [
+          {
+            path: ['people', 1],
+            value: { $type: 'ref', value: ['peopleById', 'id_2'] }
+          },
+          {
+            path: ['peopleById', 'id_2', 'name'],
+            value: { $type: 'atom', value: args[0], $metadata: 'meta' }
+          }
+        ];
+      },
+      0: {
+        $type: 'ref',
+        value: ['peopleById', 'id_1']
+      }
+    },
+    peopleById: {
+      id_1: {
+        name: 'Tom',
+        age: 28,
+        height: 71
+      }
+    }
+  }).boxValues();
+
+  const callPath = ['people', 'create'];
+  const args = ['Harry Jr.'];
+  const refPaths = [['name']];
+  const thisPaths = [];
+
+  model.call(callPath, args, refPaths, thisPaths)
+    .subscribe((res) => {
+      t.equal(res.json.people[1].name.value, 'Harry Jr.');
+      t.equal(res.json.people[1].name.$metadata, 'meta');
+    });
+});
