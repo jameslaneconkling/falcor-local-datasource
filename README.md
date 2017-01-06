@@ -84,11 +84,6 @@ model.call(['todos', 'add'], ['jumpstyle'], [[['label', 'completed']]], [['lengt
 // > added new todo
 ```
 
-**TODO**
-* Path invalidation
-* boxed value metadata.
-
-It should be possible to accomplish what you need without these, but to achieve feature parity with falcor-router they should probably be included.
 
 ## Installation
 Current builds only support NPM.  If you use a different package manager, or no package manager, either download and build locally, or post an issue and I'll expand the build step.
