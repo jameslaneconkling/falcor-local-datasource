@@ -129,26 +129,42 @@ const mergeGraphs = (target, source, targetPath = []) =>
 
 
 const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
-  // if subTree does not terminate at a value or sentinel, meaning path is incomplete,
-  // or if subTree does not contain path node, meaning path does not exist in subTree
-  // terminate the subTree w/ an empty atom leaf node
-  // otherwise, return value
   if (path.length === 1) {
-    if  ((typeof subTree[path[0]] === 'object' && !subTree[path[0]].$type) || typeof subTree[path[0]] === 'undefined') {
+    // if subTree does not terminate at a value or sentinel, meaning path is incomplete
+    // terminate w/ empty atom leaf node
+    // if subTree does not contain path node, meaning path does not exist in subTree
+    // terminate w/ error leaf node
+    // otherwise, return value
+    if (typeof subTree[path[0]] === 'object' && !subTree[path[0]].$type) {
       return { [path[0]]: { $type: 'atom', value: undefined } };
+    } else if (typeof subTree[path[0]] === 'undefined') {
+      return { [path[0]]: { $type: 'error', value: 'Node does not exist' } };
     }
 
     return { [path[0]]: subTree[path[0]] };
   }
 
+  // ***************************************************
+  // NOTE - there is a difficult issue here: how to tell when a query overshoots
+  // and should return the last value encountered,
+  // vs. when the query asks for a resource that doesn't exist.
+  //
+  // e.g.
+  // Overshooting: ['people', 0, 'name', 'x', 'y']
+  // Should return: { people: { 0: { name: 'value' } } }
+  //
+  // Non-existent path: ['people', 100, 'name']
+  // Should return: { people: { 100: { name: { $type: 'error' value: <errorMessage> } } } }
+  // or maybe should return an empty atom, depending on the client expectation
+  // ***************************************************
   // if next node is a value or an atom, and path has not yet terminated,
   // meaning path has overshot tree, don't continue walking tree and instead return value/atom
-  if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
-    return { [path[0]]: subTree[path[0]] };
-  }
+  // if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
+  //   return { [path[0]]: subTree[path[0]] };
+  // }
 
   // if next key in path points to a ref, resolve ref
-  if (subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
+  if (subTree[path[0]] && subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
     return {
       [path[0]]: extractSubTreeByPath(path.slice(1), walkTree(subTree[path[0]].value, graph), graph)
     };

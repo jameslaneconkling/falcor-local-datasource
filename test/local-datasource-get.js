@@ -92,7 +92,12 @@ tape('model.get - incomplete paths [paths that undershoot] should return sentine
     });
 });
 
-tape('model.get - nonexistent paths [paths that overshoot] should return last resolved value', (t) => {
+// unfortunately, it is not possible to tell when a path overshoots vs.
+// when it points to a node that doesn't exist
+// e.g. [people, 100, 'name'] vs. [people, 0, 'name', 'x', 'y']
+// given that correctly handling the former case (node doesn't exist) is more important,
+// it is not possible to also correctly handle paths that overshoot
+tape.skip('model.get - paths that overshoot should return last resolved value', (t) => {
   t.plan(1);
 
   const model = setupModel();
@@ -108,3 +113,25 @@ tape('model.get - nonexistent paths [paths that overshoot] should return last re
       t.deepEqual(res.json, expectedResponse);
     });
 });
+
+tape('model.get - nonexistent paths should return error sentinels', (t) => {
+  t.plan(1);
+
+  const model = setupModel();
+  const expectedResponse = {
+    people: {
+      500: {
+        name: { $type: 'error', value: 'Node does not exist' },
+        age: { $type: 'error', value: 'Node does not exist' }
+      }
+    }
+  };
+
+  model.get(['people', 500, ['name', 'age']])
+    .subscribe((res) => {
+      t.deepEqual(res.json, expectedResponse);
+    }, (err) => {
+      t.pass(err);
+    });
+});
+
