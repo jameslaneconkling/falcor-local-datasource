@@ -110,7 +110,7 @@ tape('model.call - Returns boxed values returned from graph functions', (t) => {
     });
 });
 
-tape.only('model.call - Should handle errors in call functions', (t) => {
+tape('model.call - Should handle errors in call functions', (t) => {
   t.plan(1);
 
   const model = setupModel({
