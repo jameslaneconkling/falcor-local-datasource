@@ -11,7 +11,7 @@ Falcor DataSource interface exposing a local JSON Graph object for frontend stor
 Simply using a falcor model with a cache supports all `model.get()` and `model.set()` functionality: `const model = new falcor.Model({ cache: myJSONGraphObject });`.  However, the model cache does not allow function methods to be defined on the JSONGraph object, and hence does not expose `model.call()` operations to, for example, add or delete nodes to/from the graph.
 
 ## Usage
-To use the LocalDataSource, simply define methods on the JSONGraph object, pass it to the LocalDataSource on initialization, and invoke via `model.call(callPath:Path, arguments:any[], refPaths?: PathSet[], thisPaths?:PathSet[])`.  The method will be invoked with a reference to the graph, followed by the arguments array passed to `model.call()`
+To initialize the LocalDataSource, simply define methods on the JSONGraph object and pass to the LocalDataSource class constructor.  JSONGraph functions can now be invoked via `model.call(callPath:Path, arguments:any[], refPaths?: PathSet[], thisPaths?:PathSet[])`.  The function signature is `(graph:JSONGraph, arguments:any[])`.
 
 Similar to the [Falcor Router](https://netflix.github.io/falcor/documentation/model.html#calling-functions), JSONGraph methods must return a [JSONGraphEnvelope](https://netflix.github.io/falcor/doc/global.html#JSONGraphEnvelope) or Array of [PathValues](https://netflix.github.io/falcor/doc/global.html#PathValue) that describe the changes to the graph.  It is recommended that you not mutate the graph directly, but rather describe the changes to the graph via the returned JSONGraphEnvelope or PathValues array.
 
