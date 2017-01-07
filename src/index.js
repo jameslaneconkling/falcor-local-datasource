@@ -30,42 +30,46 @@ module.exports = class LocalDatasource {
   }
 
   call(callPath, args, refPaths = [], thisPaths = []) {
-    let callResponse = walkTree(callPath, this._graph)(this._graph, args);
+    try {
+      let callResponse = walkTree(callPath, this._graph)(this._graph, args);
 
-    if (isPathValues(callResponse)) {
-      callResponse = pathValues2JSONGraphEnvelope(callResponse);
-    } else if (!isJSONGraphEnvelope(callResponse)) {
-      return Rx.Observable.throw(new Error(`
-        ${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues.
-        Returned ${callPath}
-      `));
+      if (isPathValues(callResponse)) {
+        callResponse = pathValues2JSONGraphEnvelope(callResponse);
+      } else if (!isJSONGraphEnvelope(callResponse)) {
+        return Rx.Observable.throw(new Error(`
+          ${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues.
+          Returned ${callPath}
+        `));
+      }
+
+      // merge call response into graph
+      this._graph = mergeGraphs(this._graph, callResponse.jsonGraph);
+
+      // add thisPaths to response paths
+      const fullThisPaths = thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath]);
+
+      // add refPaths to response paths
+      const fullRefPaths = expandPaths(callResponse.paths)
+        .map(path => ({
+          path,
+          value: walkTree(path, callResponse.jsonGraph)
+        }))
+        .filter(pathValue => pathValue.value.$type === 'ref')
+        .map(pathValue =>
+          refPaths.map(refPath => [...pathValue.path, ...refPath])
+        )
+        .reduce((flatMap, fullRefPaths) => [...flatMap, ...fullRefPaths], []);
+
+      // model will resolve empty envelope.jsonGraph object with a subsequent call to model.get
+      // if for some reason this turns out to be suboptimal, reimplement above to
+      // build envelope.jsonGraph while building envelope.paths
+      // see branch: refactor/construct-call-jsongraph
+      return Rx.Observable.just({
+        jsonGraph: {},
+        paths: [...fullThisPaths, ...fullRefPaths]
+      });
+    } catch (e) {
+      return Rx.Observable.throw(e);
     }
-
-    // merge call response into graph
-    this._graph = mergeGraphs(this._graph, callResponse.jsonGraph);
-
-    // add thisPaths to response paths
-    const fullThisPaths = thisPaths.map(thisPath => [...callPath.slice(0, -1), ...thisPath]);
-
-    // add refPaths to response paths
-    const fullRefPaths = expandPaths(callResponse.paths)
-      .map(path => ({
-        path,
-        value: walkTree(path, callResponse.jsonGraph)
-      }))
-      .filter(pathValue => pathValue.value.$type === 'ref')
-      .map(pathValue =>
-        refPaths.map(refPath => [...pathValue.path, ...refPath])
-      )
-      .reduce((flatMap, fullRefPaths) => [...flatMap, ...fullRefPaths], []);
-
-    // model will resolve empty envelope.jsonGraph object with a subsequent call to model.get
-    // if for some reason this turns out to be suboptimal, reimplement above to
-    // build envelope.jsonGraph while building envelope.paths
-    // see branch: refactor/construct-call-jsongraph
-    return Rx.Observable.just({
-      jsonGraph: {},
-      paths: [...fullThisPaths, ...fullRefPaths]
-    });
   }
 };

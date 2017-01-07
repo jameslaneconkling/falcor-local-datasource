@@ -109,3 +109,29 @@ tape('model.call - Returns boxed values returned from graph functions', (t) => {
       t.equal(res.json.people[1].name.$metadata, 'meta');
     });
 });
+
+tape.only('model.call - Should handle errors in call functions', (t) => {
+  t.plan(1);
+
+  const model = setupModel({
+    people: {
+      create() {
+        throw new Error('Unhandled Error!');
+      }
+    }
+  }).boxValues().treatErrorsAsValues();
+
+  const callPath = ['people', 'create'];
+  const args = ['Harry Jr.'];
+  const refPaths = [];
+  const thisPaths = [];
+
+  model.call(callPath, args, refPaths, thisPaths)
+    .subscribe(() => {
+      t.fail('Should not run onNext');
+    }, (err) => {
+      t.equal(err.message, 'Unhandled Error!');
+    }, () => {
+      t.fail('Should not run onComplete');
+    });
+});
