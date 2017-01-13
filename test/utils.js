@@ -56,6 +56,22 @@ tape('walkTree - Should return full tree if path is empty', (t) => {
 
   t.deepEqual(walkTree(path, tree), expected);
 });
+tape('walkTree - Should follow refs', (t) => {
+  t.plan(1);
+
+  const tree = {
+    people: {
+      1: { $type: 'ref', value: ['peopleById', '_1'] }
+    },
+    peopleById: {
+      _1: { name: 'Tom' }
+    }
+  };
+  const path = ['people', 1, 'name'];
+  const expected = 'Tom';
+
+  t.equal(walkTree(path, tree), expected);
+});
 
 
 tape('assocPath - adds value to target at path when path does not already exist in target', (t) => {

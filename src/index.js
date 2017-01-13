@@ -6,6 +6,7 @@ const expandPaths = require('./utils').expandPaths;
 const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 const extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 const mergeGraphs = require('./utils').mergeGraphs;
+const collapse = require('falcor-path-utils').collapse;
 
 
 module.exports = class LocalDatasource {
@@ -72,7 +73,7 @@ module.exports = class LocalDatasource {
       // see branch: refactor/construct-call-jsongraph
       return Rx.Observable.just({
         jsonGraph: {},
-        paths: [...fullThisPaths, ...fullRefPaths]
+        paths: collapse([...fullThisPaths, ...fullRefPaths])
       });
     } catch (e) {
       return Rx.Observable.throw(e);

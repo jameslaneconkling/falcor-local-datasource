@@ -110,6 +110,52 @@ tape('model.call - Returns boxed values returned from graph functions', (t) => {
     });
 });
 
+tape.only('model.call - Should follow refs in thisPaths and refPaths', (t) => {
+  t.plan(1);
+
+  const graph = {
+    resource: {
+      search: {
+        add() {
+          return [
+            { path: ['resource', 'search', 123], value: { $type: 'ref', value: ['search', 123] } },
+            { path: ['search', 123, 'totalMatches'], value: 100 },
+            { path: ['search', 123, 'matches', 0], value: { $type: 'ref', value: ['object', 1] } },
+            { path: ['search', 123, 'matches', 1], value: { $type: 'ref', value: ['object', 2] } }
+          ];
+        }
+      }
+    },
+    object: {
+      1: { label: 'Obama' },
+      2: { label: 'White House' },
+      3: { label: 'Peru' },
+      4: { label: 'Iraq War' },
+      5: { label: 'Whatnot' },
+      6: { label: 'The Other Thing' }
+    }
+  };
+  const model = setupModel(graph);
+  const expectedResponse = {
+    resource: {
+      search: {
+        123: {
+          totalMatches: 100,
+          matches: {
+            0: { label: 'Obama' },
+            1: { label: 'White House' }
+          }
+        }
+      }
+    }
+  };
+
+  model.call(['resource', 'search', 'add'], [], [['totalMatches'], ['matches', { to: 1 }, 'label']], [])
+    .subscribe(({ json: JSONGraph }) => {
+      t.deepEqual(JSONGraph, expectedResponse);
+    });
+});
+
 tape('model.call - Should handle errors in call functions', (t) => {
   t.plan(1);
 

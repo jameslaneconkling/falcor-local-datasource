@@ -21,13 +21,16 @@ const isJSONGraphEnvelope = JSONGraphEnvelope =>
   typeof JSONGraphEnvelope.jsonGraph === 'object' && Array.isArray(JSONGraphEnvelope.paths);
 
 
-const walkTree = (path, tree) => {
+const walkTree = (path, tree, graph = tree) => {
   if (path.length === 0) {
     return tree;
   } else if (path.length === 1) {
     return tree[path[0]];
+  } else if (path[0] in tree && tree[path[0]].$type === 'ref') {
+    // if encountering a ref, go back to the root graph and evaluate new path from there
+    return walkTree([...tree[path[0]].value, ...path.slice(1)], graph);
   } else if (path[0] in tree) {
-    return walkTree(path.slice(1), tree[path[0]]);
+    return walkTree(path.slice(1), tree[path[0]], graph);
   }
   return undefined;
 };
