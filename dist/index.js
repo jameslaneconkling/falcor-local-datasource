@@ -16,6 +16,7 @@ var expandPaths = require('./utils').expandPaths;
 var pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 var extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 var mergeGraphs = require('./utils').mergeGraphs;
+var collapse = require('falcor-path-utils').collapse;
 
 module.exports = function () {
   function LocalDatasource() {
@@ -54,14 +55,18 @@ module.exports = function () {
 
       try {
         var _ret = function () {
-          var callResponse = walkTree(callPath, _this._graph)(_this._graph, args);
+          var graphMethod = walkTree(callPath, _this._graph);
+
+          if (typeof graphMethod !== 'function') {
+            throw new Error('Tried to envoke a call method on an invalid graph node. ' + JSON.stringify(callPath) + ' is not a function');
+          }
+
+          var callResponse = graphMethod(_this._graph, args);
 
           if (isPathValues(callResponse)) {
             callResponse = pathValues2JSONGraphEnvelope(callResponse);
           } else if (!isJSONGraphEnvelope(callResponse)) {
-            return {
-              v: Rx.Observable.throw(new Error('\n          ' + JSON.stringify(callPath) + '(args) should return a JSONGraphEnvelope or an array of PathValues.\n          Returned ' + callPath + '\n        '))
-            };
+            throw new Error('\n          ' + JSON.stringify(callPath) + '(args) should return a JSONGraphEnvelope or an array of PathValues.\n          Returned ' + callPath + '\n        ');
           }
 
           // merge call response into graph
@@ -95,7 +100,7 @@ module.exports = function () {
           return {
             v: Rx.Observable.just({
               jsonGraph: {},
-              paths: [].concat(_toConsumableArray(fullThisPaths), _toConsumableArray(fullRefPaths))
+              paths: collapse([].concat(_toConsumableArray(fullThisPaths), _toConsumableArray(fullRefPaths)))
             })
           };
         }();

@@ -2,9 +2,9 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var collapse = require('falcor-path-utils').collapse;
 
@@ -31,12 +31,17 @@ var isJSONGraphEnvelope = function isJSONGraphEnvelope(JSONGraphEnvelope) {
 };
 
 var walkTree = function walkTree(path, tree) {
+  var graph = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : tree;
+
   if (path.length === 0) {
     return tree;
   } else if (path.length === 1) {
     return tree[path[0]];
+  } else if (path[0] in tree && tree[path[0]].$type === 'ref') {
+    // if encountering a ref, go back to the root graph and evaluate new path from there
+    return walkTree([].concat(_toConsumableArray(tree[path[0]].value), _toConsumableArray(path.slice(1))), graph);
   } else if (path[0] in tree) {
-    return walkTree(path.slice(1), tree[path[0]]);
+    return walkTree(path.slice(1), tree[path[0]], graph);
   }
   return undefined;
 };
