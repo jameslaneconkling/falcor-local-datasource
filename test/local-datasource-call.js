@@ -1,4 +1,5 @@
 const tape = require('tape');
+// const Observable = require('rxjs').Observable;
 const setupModel = require('./test-utils').setupModel;
 
 
@@ -110,7 +111,7 @@ tape('model.call - Returns boxed values returned from graph functions', (t) => {
     });
 });
 
-tape.only('model.call - Should follow refs in thisPaths and refPaths', (t) => {
+tape.skip('model.call - Should follow refs in thisPaths and refPaths', (t) => {
   t.plan(1);
 
   const graph = {
@@ -118,28 +119,31 @@ tape.only('model.call - Should follow refs in thisPaths and refPaths', (t) => {
       search: {
         add() {
           return [
-            { path: ['resource', 'search', 123], value: { $type: 'ref', value: ['search', 123] } },
-            { path: ['search', 123, 'totalMatches'], value: 100 },
-            { path: ['search', 123, 'matches', 0], value: { $type: 'ref', value: ['object', 1] } },
-            { path: ['search', 123, 'matches', 1], value: { $type: 'ref', value: ['object', 2] } }
+            // ISSUE: passing back resources that are 2 references away
+            // (resource.search -ref- search.:id -ref- object)
+            // means that refPaths are evaluated on two different types of refs (search and object)
+            // even though totalMatches applies to only one,
+            // and matches.range.keySet applies to the other
+            { path: ['resource', 'search', 234], value: { $type: 'ref', value: ['search', 234] } },
+            { path: ['search', 234, 'totalMatches'], value: 100 },
+            { path: ['search', 234, 'matches', 0], value: { $type: 'ref', value: ['object', 1] } },
+            { path: ['search', 234, 'matches', 1], value: { $type: 'ref', value: ['object', 2] } },
+            { path: ['object', 1], value: 'Obama' },
+            { path: ['object', 2], value: 'White House' }
           ];
         }
       }
     },
     object: {
       1: { label: 'Obama' },
-      2: { label: 'White House' },
-      3: { label: 'Peru' },
-      4: { label: 'Iraq War' },
-      5: { label: 'Whatnot' },
-      6: { label: 'The Other Thing' }
+      2: { label: 'White House' }
     }
   };
   const model = setupModel(graph);
   const expectedResponse = {
     resource: {
       search: {
-        123: {
+        234: {
           totalMatches: 100,
           matches: {
             0: { label: 'Obama' },
@@ -151,8 +155,10 @@ tape.only('model.call - Should follow refs in thisPaths and refPaths', (t) => {
   };
 
   model.call(['resource', 'search', 'add'], [], [['totalMatches'], ['matches', { to: 1 }, 'label']], [])
-    .subscribe(({ json: JSONGraph }) => {
-      t.deepEqual(JSONGraph, expectedResponse);
+    .subscribe((JSONEnvelope) => {
+      t.deepEqual(JSON.parse(JSONEnvelope.json.toString()), expectedResponse);
+    }, (err) => {
+      t.fail(err);
     });
 });
 

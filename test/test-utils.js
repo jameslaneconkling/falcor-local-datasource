@@ -1,4 +1,5 @@
 const falcor = require('falcor');
+// const falcor = require('@graphistry/falcor');
 const LocalDatasource = require('../src/index');
 
 
