@@ -67,14 +67,12 @@ module.exports = class LocalDatasource {
         )
         .reduce((flatMap, fullRefPaths) => [...flatMap, ...fullRefPaths], []);
 
-      // model will resolve empty envelope.jsonGraph object with a subsequent call to model.get
+      // for simplicity, call only constructs paths for response, then uses get to
+      // construct the jsonGraph.
       // if for some reason this turns out to be suboptimal, reimplement above to
       // build envelope.jsonGraph while building envelope.paths
       // see branch: refactor/construct-call-jsongraph
-      return Rx.Observable.just({
-        jsonGraph: {},
-        paths: collapse([...fullThisPaths, ...fullRefPaths])
-      });
+      return this.get(collapse([...fullThisPaths, ...fullRefPaths]));
     } catch (e) {
       return Rx.Observable.throw(e);
     }
