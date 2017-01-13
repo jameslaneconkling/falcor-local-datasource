@@ -1,6 +1,7 @@
 const tape = require('tape');
 // const Observable = require('rxjs').Observable;
 const setupModel = require('./test-utils').setupModel;
+const walkTree = require('../src/utils').walkTree;
 
 
 tape('model.call - Exposes graph functions in the local JSONGraph store', (t) => {
@@ -182,7 +183,7 @@ tape('model.call - Should handle errors in call functions', (t) => {
     .subscribe(() => {
       t.fail('Should not run onNext');
     }, (err) => {
-      t.equal(err.message, 'Unhandled Error!');
+      t.equal(walkTree(callPath, err.jsonGraph).value, 'Unhandled Error!');
     }, () => {
       t.fail('Should not run onComplete');
     });
