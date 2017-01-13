@@ -6,6 +6,7 @@ const expandPaths = require('./utils').expandPaths;
 const pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 const extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 const mergeGraphs = require('./utils').mergeGraphs;
+const assocPath = require('./utils').assocPath;
 const collapse = require('falcor-path-utils').collapse;
 
 
@@ -43,10 +44,7 @@ module.exports = class LocalDatasource {
       if (isPathValues(callResponse)) {
         callResponse = pathValues2JSONGraphEnvelope(callResponse);
       } else if (!isJSONGraphEnvelope(callResponse)) {
-        throw new Error(`
-          ${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues.
-          Returned ${callPath}
-        `);
+        throw new Error(`${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues. Returned ${JSON.stringify(callResponse)}`);
       }
 
       // merge call response into graph
@@ -74,7 +72,10 @@ module.exports = class LocalDatasource {
       // see branch: refactor/construct-call-jsongraph
       return this.get(collapse([...fullThisPaths, ...fullRefPaths]));
     } catch (e) {
-      return Rx.Observable.throw(e);
+      return Rx.Observable.throw({
+        jsonGraph: assocPath(callPath, { $type: 'error', value: e.message }, {}),
+        paths: callPath
+      });
     }
   }
 };
