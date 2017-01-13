@@ -31,15 +31,21 @@ module.exports = class LocalDatasource {
 
   call(callPath, args, refPaths = [], thisPaths = []) {
     try {
-      let callResponse = walkTree(callPath, this._graph)(this._graph, args);
+      const graphMethod = walkTree(callPath, this._graph);
+
+      if (typeof graphMethod !== 'function') {
+        throw new Error(`Tried to envoke a call method on an invalid graph node. ${JSON.stringify(callPath)} is not a function`);
+      }
+
+      let callResponse = graphMethod(this._graph, args);
 
       if (isPathValues(callResponse)) {
         callResponse = pathValues2JSONGraphEnvelope(callResponse);
       } else if (!isJSONGraphEnvelope(callResponse)) {
-        return Rx.Observable.throw(new Error(`
+        throw new Error(`
           ${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues.
           Returned ${callPath}
-        `));
+        `);
       }
 
       // merge call response into graph
