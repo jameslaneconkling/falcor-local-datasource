@@ -16,6 +16,7 @@ var expandPaths = require('./utils').expandPaths;
 var pathValues2JSONGraphEnvelope = require('./utils').pathValues2JSONGraphEnvelope;
 var extractSubTreeByPaths = require('./utils').extractSubTreeByPaths;
 var mergeGraphs = require('./utils').mergeGraphs;
+var assocPath = require('./utils').assocPath;
 var collapse = require('falcor-path-utils').collapse;
 
 module.exports = function () {
@@ -66,7 +67,7 @@ module.exports = function () {
           if (isPathValues(callResponse)) {
             callResponse = pathValues2JSONGraphEnvelope(callResponse);
           } else if (!isJSONGraphEnvelope(callResponse)) {
-            throw new Error('\n          ' + JSON.stringify(callPath) + '(args) should return a JSONGraphEnvelope or an array of PathValues.\n          Returned ' + callPath + '\n        ');
+            throw new Error(JSON.stringify(callPath) + '(args) should return a JSONGraphEnvelope or an array of PathValues. Returned ' + JSON.stringify(callResponse));
           }
 
           // merge call response into graph
@@ -93,21 +94,22 @@ module.exports = function () {
             return [].concat(_toConsumableArray(flatMap), _toConsumableArray(fullRefPaths));
           }, []);
 
-          // model will resolve empty envelope.jsonGraph object with a subsequent call to model.get
+          // for simplicity, call only constructs paths for response, then uses get to
+          // construct the jsonGraph.
           // if for some reason this turns out to be suboptimal, reimplement above to
           // build envelope.jsonGraph while building envelope.paths
           // see branch: refactor/construct-call-jsongraph
           return {
-            v: Rx.Observable.just({
-              jsonGraph: {},
-              paths: collapse([].concat(_toConsumableArray(fullThisPaths), _toConsumableArray(fullRefPaths)))
-            })
+            v: _this.get(collapse([].concat(_toConsumableArray(fullThisPaths), _toConsumableArray(fullRefPaths))))
           };
         }();
 
         if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
       } catch (e) {
-        return Rx.Observable.throw(e);
+        return Rx.Observable.throw({
+          jsonGraph: assocPath(callPath, { $type: 'error', value: e.message }, {}),
+          paths: callPath
+        });
       }
     }
   }]);
