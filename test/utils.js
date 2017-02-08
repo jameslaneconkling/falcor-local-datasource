@@ -485,7 +485,7 @@ tape('extractSubTreeByPath - Should return sub tree with empty atom leaf node fo
   };
   const path = ['people', 1];
   const expected = {
-    people: { 1: { $type: 'atom', value: undefined } }
+    people: { 1: { $type: 'atom', value: null } }
   };
 
   t.deepEqual(extractSubTreeByPath(path, tree), expected);

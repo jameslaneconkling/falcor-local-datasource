@@ -12,6 +12,9 @@ const collapse = require('falcor-path-utils').collapse;
 
 module.exports = class LocalDatasource {
   constructor(graph = {}) {
+    // TODO - validate graph
+    //   - all sentinels should have a value prop
+    //     (requests fail w/o good feedback if ref sentinels mislabel value prop)
     this._graph = graph;
   }
 
@@ -36,7 +39,7 @@ module.exports = class LocalDatasource {
       const graphMethod = walkTree(callPath, this._graph);
 
       if (typeof graphMethod !== 'function') {
-        throw new Error(`Tried to envoke a call method on an invalid graph node. ${JSON.stringify(callPath)} is not a function`);
+        throw new Error(`Tried to invoke a call method on an invalid graph node. ${JSON.stringify(callPath)} is not a function`);
       }
 
       let callResponse = graphMethod(this._graph, args);

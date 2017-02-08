@@ -60,7 +60,7 @@ tape('model.get - Should return boxed values', (t) => {
 });
 
 tape('model.get - incomplete paths [paths that undershoot] should return sentinel from that part of graph', (t) => {
-  t.plan(1);
+  t.plan(2);
 
   const model = setupModel().boxValues();
   const expectedResponseForRefSentinel = {
@@ -81,7 +81,9 @@ tape('model.get - incomplete paths [paths that undershoot] should return sentine
   const expectedResponseForAtomSentinel = {
     peopleById: {
       id_1: {
-        $type: 'atom'
+        $size: 51,
+        $type: 'atom',
+        value: null
       }
     }
   };
@@ -114,15 +116,15 @@ tape.skip('model.get - paths that overshoot should return last resolved value', 
     });
 });
 
-tape('model.get - nonexistent paths should return error sentinels', (t) => {
+tape('model.get - nonexistent paths should return null value atoms', (t) => {
   t.plan(1);
 
   const model = setupModel();
   const expectedResponse = {
     people: {
       500: {
-        name: { $type: 'error', value: 'Node does not exist' },
-        age: { $type: 'error', value: 'Node does not exist' }
+        name: null,
+        age: null
       }
     }
   };

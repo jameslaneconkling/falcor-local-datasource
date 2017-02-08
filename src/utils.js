@@ -136,12 +136,12 @@ const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
     // if subTree does not terminate at a value or sentinel, meaning path is incomplete
     // terminate w/ empty atom leaf node
     // if subTree does not contain path node, meaning path does not exist in subTree
-    // terminate w/ error leaf node
+    // terminate w/ empty atom leaf node
     // otherwise, return value
     if (typeof subTree[path[0]] === 'object' && !subTree[path[0]].$type) {
-      return { [path[0]]: { $type: 'atom', value: undefined } };
+      return { [path[0]]: { $type: 'atom', value: null } };
     } else if (typeof subTree[path[0]] === 'undefined') {
-      return { [path[0]]: { $type: 'error', value: 'Node does not exist' } };
+      return { [path[0]]: { $type: 'atom', value: null } };
     }
 
     return { [path[0]]: subTree[path[0]] };
