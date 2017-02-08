@@ -94,12 +94,7 @@ tape('model.get - incomplete paths [paths that undershoot] should return sentine
     });
 });
 
-// unfortunately, it is not possible to tell when a path overshoots vs.
-// when it points to a node that doesn't exist
-// e.g. [people, 100, 'name'] vs. [people, 0, 'name', 'x', 'y']
-// given that correctly handling the former case (node doesn't exist) is more important,
-// it is not possible to also correctly handle paths that overshoot
-tape.skip('model.get - paths that overshoot should return last resolved value', (t) => {
+tape('model.get - paths that overshoot should return last resolved value', (t) => {
   t.plan(1);
 
   const model = setupModel();

@@ -148,23 +148,30 @@ const extractSubTreeByPath = (path, subTree = {}, graph = subTree) => {
   }
 
   // ***************************************************
-  // NOTE - there is a difficult issue here: how to tell when a query overshoots
+  // NOTE - there is a fundamental ambiguity issue here:
+  // how to tell when a query overshoots
   // and should return the last value encountered,
   // vs. when the query asks for a resource that doesn't exist.
   //
   // e.g.
+  // Non-existent path: ['people', 100, 'name']
+  // Should return: { people: { 100: { name: { $type: 'atom' value: null } } } }
+  //
   // Overshooting: ['people', 0, 'name', 'x', 'y']
   // Should return: { people: { 0: { name: 'value' } } }
-  //
-  // Non-existent path: ['people', 100, 'name']
-  // Should return: { people: { 100: { name: { $type: 'error' value: <errorMessage> } } } }
-  // or maybe should return an empty atom, depending on the client expectation
   // ***************************************************
+
+  // if next node does not exist, meaning path is non-existent
+  // continue constructing response and terminate with null atom
+  if (typeof subTree[path[0]] === 'undefined' || subTree[path[0]] === null) {
+    return { [path[0]]: extractSubTreeByPath(path.slice(1), {}, graph) };
+  }
+
   // if next node is a value or an atom, and path has not yet terminated,
   // meaning path has overshot tree, don't continue walking tree and instead return value/atom
-  // if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
-  //   return { [path[0]]: subTree[path[0]] };
-  // }
+  if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
+    return { [path[0]]: subTree[path[0]] };
+  }
 
   // if next key in path points to a ref, resolve ref
   if (subTree[path[0]] && subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
