@@ -25,6 +25,9 @@ module.exports = function () {
 
     _classCallCheck(this, LocalDatasource);
 
+    // TODO - validate graph
+    //   - all sentinels should have a value prop
+    //     (requests fail w/o good feedback if ref sentinels mislabel value prop)
     this._graph = graph;
   }
 
@@ -59,7 +62,7 @@ module.exports = function () {
           var graphMethod = walkTree(callPath, _this._graph);
 
           if (typeof graphMethod !== 'function') {
-            throw new Error('Tried to envoke a call method on an invalid graph node. ' + JSON.stringify(callPath) + ' is not a function');
+            throw new Error('Tried to invoke a call method on an invalid graph node. ' + JSON.stringify(callPath) + ' is not a function');
           }
 
           var callResponse = graphMethod(_this._graph, args);

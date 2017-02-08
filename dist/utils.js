@@ -156,35 +156,42 @@ var extractSubTreeByPath = function extractSubTreeByPath(path) {
     // if subTree does not terminate at a value or sentinel, meaning path is incomplete
     // terminate w/ empty atom leaf node
     // if subTree does not contain path node, meaning path does not exist in subTree
-    // terminate w/ error leaf node
+    // terminate w/ empty atom leaf node
     // otherwise, return value
     if (_typeof(subTree[path[0]]) === 'object' && !subTree[path[0]].$type) {
-      return _defineProperty({}, path[0], { $type: 'atom', value: undefined });
+      return _defineProperty({}, path[0], { $type: 'atom', value: null });
     } else if (typeof subTree[path[0]] === 'undefined') {
-      return _defineProperty({}, path[0], { $type: 'error', value: 'Node does not exist' });
+      return _defineProperty({}, path[0], { $type: 'atom', value: null });
     }
 
     return _defineProperty({}, path[0], subTree[path[0]]);
   }
 
   // ***************************************************
-  // NOTE - there is a difficult issue here: how to tell when a query overshoots
+  // NOTE - there is a fundamental ambiguity issue here:
+  // how to tell when a query overshoots
   // and should return the last value encountered,
   // vs. when the query asks for a resource that doesn't exist.
   //
   // e.g.
+  // Non-existent path: ['people', 100, 'name']
+  // Should return: { people: { 100: { name: { $type: 'atom' value: null } } } }
+  //
   // Overshooting: ['people', 0, 'name', 'x', 'y']
   // Should return: { people: { 0: { name: 'value' } } }
-  //
-  // Non-existent path: ['people', 100, 'name']
-  // Should return: { people: { 100: { name: { $type: 'error' value: <errorMessage> } } } }
-  // or maybe should return an empty atom, depending on the client expectation
   // ***************************************************
+
+  // if next node does not exist, meaning path is non-existent
+  // continue constructing response and terminate with null atom
+  if (typeof subTree[path[0]] === 'undefined' || subTree[path[0]] === null) {
+    return _defineProperty({}, path[0], extractSubTreeByPath(path.slice(1), {}, graph));
+  }
+
   // if next node is a value or an atom, and path has not yet terminated,
   // meaning path has overshot tree, don't continue walking tree and instead return value/atom
-  // if (typeof subTree[path[0]] !== 'object' || subTree[path[0]].$type === 'atom') {
-  //   return { [path[0]]: subTree[path[0]] };
-  // }
+  if (_typeof(subTree[path[0]]) !== 'object' || subTree[path[0]].$type === 'atom') {
+    return _defineProperty({}, path[0], subTree[path[0]]);
+  }
 
   // if next key in path points to a ref, resolve ref
   if (subTree[path[0]] && subTree[path[0]].$type && subTree[path[0]].$type === 'ref') {
