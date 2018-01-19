@@ -53,8 +53,8 @@ const graph = {
     }
   },
   todosById: {
-    id_1: { label: 'tap dance', completed: false },
-    id_2: { label: 'see above', completed: false }
+    id_0: { label: 'tap dance', completed: false },
+    id_1: { label: 'see above', completed: false }
   }
 };
 
