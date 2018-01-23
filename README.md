@@ -82,7 +82,7 @@ model.call(['todos', 'add'], ['jumpstyle'], [[['label', 'completed']]], [['lengt
   }, () => {
     console.log('added new todo');
   });
-// > { todos: { id_4: { label: 'jumpstyle', completed: false } }, length: 4 }
+// > { todos: { id_3: { label: 'jumpstyle', completed: false } }, length: 4 }
 // > added new todo
 ```
 
