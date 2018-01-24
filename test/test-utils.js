@@ -29,6 +29,10 @@ const setupModel = (cache) => {
           .reduce((flatMap, pathValue) => [...flatMap, ...pathValue])
           .concat({
             path: ['people', 'length'],
+            $invalidated: true
+          })
+          .concat({
+            path: ['people', 'length'],
             value: peopleLength + args.length
           });
       },

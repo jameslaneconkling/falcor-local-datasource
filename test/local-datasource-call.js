@@ -1,7 +1,22 @@
 const tape = require('tape');
-// const Observable = require('rxjs').Observable;
+const Rx = require('rx');
 const setupModel = require('./test-utils').setupModel;
 const walkTree = require('../src/utils').walkTree;
+
+
+const wrapFalcorModel = (observable) => Rx.Observable.create((observer) => {
+  observable.subscribe({
+    onNext(data) { observer.next(data); },
+    onError(error) { observer.error(error); },
+    onCompleted() { observer.completed(); }
+  });
+
+  return {
+    unsubscribe() {
+      observable.dispose();
+    }
+  };
+});
 
 
 tape('model.call - Exposes graph functions in the local JSONGraph store', (t) => {
@@ -186,5 +201,26 @@ tape('model.call - Should handle errors in call functions', (t) => {
       t.equal(walkTree(callPath, err.jsonGraph).value, 'Unhandled Error!');
     }, () => {
       t.fail('Should not run onComplete');
+    });
+});
+
+tape('model.call - Should handle invalidations', (t) => {
+  t.plan(1);
+
+  const model = setupModel();
+  const callPath = ['people', 'create'];
+  const args = [{ name: 'Harry Jr.' }];
+  const refPaths = [['name']];
+  const thisPaths = [];
+  const expectedResponse = {
+    people: {
+      length: 4
+    }
+  };
+
+  wrapFalcorModel(model.call(callPath, args, refPaths, thisPaths))
+    .mergeMap(() => wrapFalcorModel(model.get(['people', 'length'])))
+    .subscribe((res) => {
+      t.deepEqual(res.json, expectedResponse);
     });
 });

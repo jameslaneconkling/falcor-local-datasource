@@ -13,7 +13,11 @@ const range = (from = 0, to) => {
 
 const isPathValues = pathValues =>
   pathValues.reduce((result, pathValue) =>
-    result && Array.isArray(pathValue.path) && typeof pathValue.value !== 'undefined',
+    result &&
+    Array.isArray(pathValue.path) && (
+      typeof pathValue.value !== 'undefined' ||
+      pathValue.$invalidated
+    ),
   true);
 
 

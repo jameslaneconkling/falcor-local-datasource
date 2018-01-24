@@ -36,6 +36,7 @@ module.exports = class LocalDatasource {
 
   call(callPath, args, refPaths = [], thisPaths = []) {
     try {
+      let invalidatedPaths = [];
       const graphMethod = walkTree(callPath, this._graph);
 
       if (typeof graphMethod !== 'function') {
@@ -45,7 +46,18 @@ module.exports = class LocalDatasource {
       let callResponse = graphMethod(this._graph, args);
 
       if (isPathValues(callResponse)) {
-        callResponse = pathValues2JSONGraphEnvelope(callResponse);
+        const [pathValues, invalidatedPathValues] = callResponse
+          .reduce(([pathValues, invalidatedPathValues], pathValue) => {
+            if (pathValue.$invalidated) {
+              return [pathValues, [...invalidatedPathValues, pathValue]];
+            }
+
+            return [[...pathValues, pathValue], invalidatedPathValues];
+          }, [[], []]);
+
+        invalidatedPaths = invalidatedPathValues.map(({ path }) => path);
+
+        callResponse = pathValues2JSONGraphEnvelope(pathValues);
       } else if (!isJSONGraphEnvelope(callResponse)) {
         throw new Error(`${JSON.stringify(callPath)}(args) should return a JSONGraphEnvelope or an array of PathValues. Returned ${JSON.stringify(callResponse)}`);
       }
@@ -68,12 +80,12 @@ module.exports = class LocalDatasource {
         )
         .reduce((flatMap, fullRefPaths) => [...flatMap, ...fullRefPaths], []);
 
-      // for simplicity, call only constructs paths for response, then uses get to
-      // construct the jsonGraph.
-      // if for some reason this turns out to be suboptimal, reimplement above to
-      // build envelope.jsonGraph while building envelope.paths
-      // see branch: refactor/construct-call-jsongraph
-      return this.get(collapse([...fullThisPaths, ...fullRefPaths]));
+      const paths = collapse([...fullThisPaths, ...fullRefPaths]);
+      return Rx.Observable.just({
+        jsonGraph: extractSubTreeByPaths(paths, this._graph),
+        paths,
+        invalidated: invalidatedPaths
+      });
     } catch (e) {
       return Rx.Observable.throw({
         jsonGraph: assocPath(callPath, { $type: 'error', value: e.message }, {}),
