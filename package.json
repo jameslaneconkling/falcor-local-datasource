@@ -1,6 +1,6 @@
 {
   "name": "falcor-local-datasource",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An implementation of the Falcor DataSource interface exposing a local JSONGraph object",
   "main": "dist/index.js",
   "scripts": {
