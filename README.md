@@ -1,3 +1,6 @@
+_This project is no longer actively maintained_.  It is now possible to embed the [Falcor Router](https://github.com/Netflix/falcor-router) directly in the client datasource, making this project superfluous.
+
+
 [![Build Status](https://travis-ci.org/jameslaneconkling/falcor-local-datasource.svg?branch=master)](https://travis-ci.org/jameslaneconkling/falcor-local-datasource)
 
 # Falcor LocalDataSource
